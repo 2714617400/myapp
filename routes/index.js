@@ -19,4 +19,24 @@ router.all('/all',function(req,res){
       }
   })
 })
+
+/* 增 */ 
+router.get('/save',function(req,res){
+  // 添加数据 —— <name>:LIN <age>:18
+  let addContent = {
+      name:'LIN',
+      age:18
+  }
+  const insert = new infoModel();
+  insert.name = addContent.name;
+  insert.age = addContent.age;
+  insert.save(function(err,data){
+      if(err){
+          res.send("添加异常");
+      }else{
+          console.log("添加成功");
+          res.send(data);
+      }
+  });
+})
 module.exports = router;
