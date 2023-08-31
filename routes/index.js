@@ -39,4 +39,42 @@ router.get('/save',function(req,res){
       }
   });
 })
+
+/* 改 */ 
+router.get('/update',function(req,res){
+  // 更新文档 —— <name>:ZEN <age>:18
+  let updateContent = {
+      name:'ZEN',
+      age:18
+  }
+  // 更新条件
+  let querys = {
+      name:'LIN',
+      age:18
+  }
+
+  infoModel.updateOne(querys,updateContent,function(err){
+      if(err){
+          console.log("修改异常");
+      }else{
+          console.log("修改成功");
+          res.send("{ updated : 1 , message : success }");
+      }
+  })
+})
+
+/* 删 */ 
+router.get('/del/:id',async function(req,res){
+  // 根据id来删除数据(id是唯一标识);
+  console.log("id:"+ req.params.id);
+  const doc = await infoModel.findById(req.params.id);
+  await doc.remove(function(err){
+      if(err){
+          res.send("删除异常");
+      }else{
+          console.log("删除成功");
+          res.send("{ delete : 1 , message : success }");
+      }
+  })
+})
 module.exports = router;
