@@ -7,6 +7,18 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+router.all('/elemental_list',function(req,res){
+    // 查询操作
+    let elementalGroup = ['无', '风', '岩', '雷', '草', '水', '火', '冰'];
+    const elementalList = elementalGroup.map((v, i) => {
+        return {
+            value: i,
+            label: v
+        }
+    })
+    res.send(elementalList);
+  })
+
 /* 查 */
 router.all('/all',function(req,res){
   // 查询操作
@@ -21,18 +33,15 @@ router.all('/all',function(req,res){
 })
 
 /* 增 */ 
-router.get('/save',function(req,res){
+router.post('/save',function(req,res){
   // 添加数据 —— <name>:LIN <age>:18
-  let addContent = {
-      name:'LIN',
-      age:18
-  }
+  const body = req.body;
   const insert = new infoModel();
-  insert.name = addContent.name;
-  insert.age = addContent.age;
+  insert.name = body.name;
+  insert.elemental = body.elemental;
   insert.save(function(err,data){
       if(err){
-          res.send("添加异常");
+          res.json(err);
       }else{
           console.log("添加成功");
           res.send(data);

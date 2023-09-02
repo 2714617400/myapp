@@ -13,13 +13,24 @@ mongoose.set('strictQuery',true);
 // })
 
 // document框架
-const infoSchema = new mongoose.Schema({
-    name:String,
-    age:Number
+const RoleSchema = new mongoose.Schema({
+    name:{
+        type: String,
+        require: [true, '名称不能为空哦～']
+    },
+    elemental: {
+        type: Number,
+        validate: {
+            validator: function(v) {
+                return [0,1,2,3,4,5,6,7].includes(v)
+            },
+            message: () => '不支持未知元素类型哟～'
+        }
+    }
 });
 
 // Model - global(全局)
-global.infoModel = mongoose.model("syan",infoSchema,"sen");
+global.infoModel = mongoose.model("Role",RoleSchema,"roles");
 
 // 共享
 module.exports = mongoose;
