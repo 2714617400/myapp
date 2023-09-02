@@ -9,6 +9,19 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
+const mongoose = require('mongoose');
+mongoose.set('strictQuery',true);
+mongoose.connect('mongodb://fancier:fancier123@127.0.0.1:27027/myapp', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+const db = mongoose.connection;
+
+db.on('error', console.error.bind(console, 'MongoDB 连接错误：'));
+db.once('open', () => {
+  console.log('成功连接到 MongoDB 数据库！');
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -36,6 +49,14 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+// 在应用程序关闭时关闭数据库连接
+process.on('SIGINT', () => {
+  db.close(() => {
+    console.log('数据库连接已关闭');
+    process.exit(0);
+  });
 });
 
 module.exports = app;

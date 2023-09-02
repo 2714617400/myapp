@@ -7,10 +7,10 @@ mongoose.set('strictQuery',true);
 //         console.log("—— 连接成功 ——");
 //     }
 // })
-mongoose.connect('mongodb://fancier:fancier123@127.0.0.1:27027/myapp', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+// mongoose.connect('mongodb://fancier:fancier123@127.0.0.1:27027/myapp', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// })
 
 // document框架
 const infoSchema = new mongoose.Schema({
