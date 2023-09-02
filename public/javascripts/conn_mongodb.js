@@ -16,7 +16,9 @@ mongoose.set('strictQuery',true);
 const RoleSchema = new mongoose.Schema({
     name:{
         type: String,
-        require: [true, '名称不能为空哦～']
+        trim: true,
+        unique: true,
+        required: [true, '名称不能为空哦～']
     },
     elemental: {
         type: Number,
