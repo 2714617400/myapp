@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 mongoose.set('strictQuery',true);
-mongoose.connect('mongodb://127.0.0.1:27017/syan',function(err){
-    if(err){
-        console.log("—— 连接异常 ——");
-    }else{
-        console.log("—— 连接成功 ——");
-    }
+// mongoose.connect('mongodb://127.0.0.1:27017/syan',function(err){
+//     if(err){
+//         console.log("—— 连接异常 ——");
+//     }else{
+//         console.log("—— 连接成功 ——");
+//     }
+// })
+mongoose.connect('mongodb://fancier:fancier123@127.0.0.1:27027/myapp', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 })
 
 // document框架
