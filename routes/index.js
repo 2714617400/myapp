@@ -24,7 +24,7 @@ router.all('/all',function(req,res){
   // 查询操作
   infoModel.find({}).exec(function(err,data){
       if(err){
-          res.send("查询异常");
+          res.status(400).send("查询异常");
       }else{
           console.log("查询成功");
           res.send(data);
@@ -41,7 +41,7 @@ router.post('/save',function(req,res){
   insert.elemental = body.elemental;
   insert.save(function(err,data){
       if(err){
-          res.json(err);
+          res.status(400).json(err.code === 11000 ? '名称重复' : err);
       }else{
           console.log("添加成功");
           res.send(data);
