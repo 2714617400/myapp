@@ -1,62 +1,58 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+/*
+ * @Author: hejiaqun 17774657825@163.com
+ * @Date: 2023-09-02 16:56:38
+ * @LastEditors: hejiaqun 17774657825@163.com
+ * @LastEditTime: 2023-09-04 14:49:11
+ * @FilePath: \myapp\app.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+var createError = require("http-errors");
+var express = require("express");
+var path = require("path");
+var cookieParser = require("cookie-parser");
+var logger = require("morgan");
 
 var app = express();
 
-const mongoose = require('mongoose');
-mongoose.set('strictQuery',true);
-mongoose.connect('mongodb://fancier:fancier123@127.0.0.1:27027/myapp', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-const db = mongoose.connection;
+// 连接数据库
+require("./plugins/mongoose");
 
-db.on('error', console.error.bind(console, 'MongoDB 连接错误：'));
-db.once('open', () => {
-  console.log('成功连接到 MongoDB 数据库！');
+// 文件上传
+const upload = require("./plugins/multer");
+app.post("/upload", upload.single("file"), (req, res) => {
+  // 文件上传成功后的处理
+  console.log(req.file);
+  res.json({ message: "文件上传成功" });
 });
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(logger('dev'));
+app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// 路由
+var indexRouter = require("./routes/index");
+var usersRouter = require("./routes/users");
+var genshinRouter = require("./routes/genshin");
+app.use("/", indexRouter);
+app.use("/users", usersRouter);
+app.use("/genshin", genshinRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+// 404
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = req.app.get("env") === "development" ? err : {};
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
-});
-
-// 在应用程序关闭时关闭数据库连接
-process.on('SIGINT', () => {
-  db.close(() => {
-    console.log('数据库连接已关闭');
-    process.exit(0);
-  });
+  res.render("error");
 });
 
 module.exports = app;
