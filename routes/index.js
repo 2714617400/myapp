@@ -4,19 +4,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.render("index", { title: "Express" });
-});
-
-router.all("/elemental_list", function (req, res) {
-  // 查询操作
-  let elementalGroup = ["无", "风", "岩", "雷", "草", "水", "火", "冰"];
-  const elementalList = elementalGroup.map((v, i) => {
-    return {
-      value: i,
-      label: v,
-    };
-  });
-  res.send(elementalList);
+  res.send('这里是express')
 });
 
 // /* 查 */

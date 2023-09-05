@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 // mongoose.set('strictQuery',true);
-const Host = "127.0.0.1:3000";
 
 const RoleSchema = new mongoose.Schema({
   name: {
@@ -21,7 +20,7 @@ const RoleSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: [true, "头像不能为空哦～"],
-    get: (v) => Host + "/uploads/" + v,
+    get: (v) => CONF.FILE_HOST + "/uploads/" + v,
   },
 });
 
