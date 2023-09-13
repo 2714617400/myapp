@@ -40,9 +40,11 @@ app.use(express.static(path.join(__dirname, "public")));
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var genshinRouter = require("./routes/genshin");
+var uploadRouter = require("./routes/upload");
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/genshin", genshinRouter);
+app.use("/file", uploadRouter);
 
 // 404
 app.use(function (req, res, next) {
