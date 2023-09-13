@@ -2,7 +2,7 @@
  * @Author: hejiaqun 17774657825@163.com
  * @Date: 2023-09-02 16:56:38
  * @LastEditors: hejiaqun 17774657825@163.com
- * @LastEditTime: 2023-09-07 09:05:42
+ * @LastEditTime: 2023-09-13 09:59:21
  * @FilePath: \myapp\app.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+require("dotenv").config();
 const config = require("./global.config")["development"];
 global.CONF = config;
 const utils = require("./utils/index");
@@ -45,6 +46,8 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/genshin", genshinRouter);
 app.use("/file", uploadRouter);
+
+console.log("环境变量: ", process.env.MY_APP);
 
 // 404
 app.use(function (req, res, next) {
