@@ -1,12 +1,3 @@
-/*
- * @Author: hejiaqun 17774657825@163.com
- * @Date: 2023-09-02 16:56:38
- * @LastEditors: hejiaqun 17774657825@163.com
- * @LastEditTime: 2023-09-14 18:01:08
- * @FilePath: \myapp\app.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
-
 var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
@@ -31,6 +22,11 @@ app.post("/upload", upload.single("file"), (req, res) => {
   res.json({ message: "文件上传成功" });
 });
 
+// 解析不同类型的POST请求
+app.use(express.json()); // application/json
+app.use(express.urlencoded({ extended: true })); // x-www-form-urlencoded
+app.use(upload.array()); // multipart/form-data
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -51,6 +47,10 @@ app.use("/file", uploadRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
+/**
+ * 响应规范: 正常情况状态为200,直接传值. 异常情况状态为400,传报错文字. 服务器错误传500
+ */
 
 // error handler
 app.use(function (err, req, res, next) {

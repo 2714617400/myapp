@@ -1,13 +1,7 @@
-/*
- * @Author: hejiaqun 17774657825@163.com
- * @Date: 2023-09-04 14:33:08
- * @LastEditors: hejiaqun 17774657825@163.com
- * @LastEditTime: 2023-09-13 18:35:32
- * @FilePath: \myapp\models\genshin.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 const mongoose = require("mongoose");
 // mongoose.set('strictQuery',true);
+const { FILE_HOST, IMAGE_PRE } = process.env;
+const PRE = FILE_HOST + IMAGE_PRE;
 
 const RoleSchema = new mongoose.Schema(
   {
@@ -32,7 +26,7 @@ const RoleSchema = new mongoose.Schema(
       // 角色头像
       type: String,
       required: [true, "头像不能为空哦～"],
-      get: (v) => CONF.FILE_HOST + "/uploads/" + v,
+      get: (v) => PRE + v,
     },
     weaponType: {
       // 武器类型: 单手剑、双手剑、弓、长柄武器、法器

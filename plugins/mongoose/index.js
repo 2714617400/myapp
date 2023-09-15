@@ -1,15 +1,9 @@
-/*
- * @Author: hejiaqun 17774657825@163.com
- * @Date: 2023-09-04 14:22:45
- * @LastEditors: hejiaqun 17774657825@163.com
- * @LastEditTime: 2023-09-04 14:35:46
- * @FilePath: \myapp\plugins\mongoose\index.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 const mongoose = require("mongoose");
 
 mongoose.set("strictQuery", true);
-mongoose.connect(`mongodb://${CONF.MONGO}`, {
+const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME } = process.env;
+// mongoose.connect(`mongodb://${CONF.MONGO}`, {
+mongoose.connect(`mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
