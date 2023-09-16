@@ -28,8 +28,6 @@ app.use(express.urlencoded({ extended: true })); // x-www-form-urlencoded
 app.use(upload.array()); // multipart/form-data
 
 app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -38,10 +36,12 @@ var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var genshinRouter = require("./routes/genshin");
 var uploadRouter = require("./routes/upload");
+var storyRouter = require("./routes/story");
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/genshin", genshinRouter);
 app.use("/file", uploadRouter);
+app.use("/story", storyRouter);
 
 // 404
 app.use(function (req, res, next) {

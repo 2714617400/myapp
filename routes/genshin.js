@@ -32,9 +32,6 @@ router.post("/", function (req, res) {
   const body = req.body;
   const insert = new Role();
   copy(insert, body);
-  // insert.name = body.name;
-  // insert.elemental = body.elemental;
-  // insert.avatar = body.avatar;
 
   insert.save(function (err, data) {
     if (err) {
