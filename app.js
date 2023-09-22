@@ -23,9 +23,9 @@ app.post("/upload", upload.single("file"), (req, res) => {
 });
 
 // 解析不同类型的POST请求
+// app.use(upload.array()); // multipart/form-data 这是对所有请求都执行文件上传处理,不管请求路径是否匹配,应该再需要的路由使用
 app.use(express.json()); // application/json
 app.use(express.urlencoded({ extended: true })); // x-www-form-urlencoded
-app.use(upload.array()); // multipart/form-data
 
 app.use(logger("dev"));
 app.use(cookieParser());
@@ -60,7 +60,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.send("error");
+  res.send(err);
 });
 
 module.exports = app;
