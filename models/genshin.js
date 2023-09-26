@@ -26,7 +26,7 @@ const RoleSchema = new mongoose.Schema(
       // 角色头像
       type: String,
       required: [true, "头像不能为空哦～"],
-      get: (v) => PRE + v,
+      // get: (v) => PRE + v,
     },
     weaponType: {
       // 武器类型: 单手剑、双手剑、弓、长柄武器、法器
@@ -85,6 +85,11 @@ const RoleSchema = new mongoose.Schema(
     timestamps: true, // 自动添加createdAt和updatedAt字段
   }
 );
+
+// 虚拟字段,类似计算属性,并不实际存在于数据库,而是根据数据库中其他字段计算生成
+RoleSchema.virtual("avatar_url").get(function () {
+  return this.avatar ? `${PRE + this.avatar}` : "";
+});
 
 // RoleSchema.pre('save', function(next) {
 //   if(this.isGod) {
