@@ -11,6 +11,10 @@ Object.assign(global, utils);
 
 var app = express();
 
+const SendEmail = require("./task/demo.js");
+SendEmail.start();
+console.log("定时任务开始");
+
 // 连接数据库
 require("./plugins/mongoose");
 
