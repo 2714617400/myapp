@@ -11,6 +11,20 @@ Object.assign(global, utils);
 
 var app = express();
 
+//测试代码
+const superagent = require("superagent");
+const cheerio = require("cheerio");
+const iconv = require("iconv-lite");
+app.get("/", async (req, res) => {
+  let result = await superagent.get('http://www.ibiquge.cc/448/350156.html')
+  const $ = cheerio.load(result.text)
+  console.log(result.charset)
+  let send = iconv.decodeStream($('#content').text(), 'gbk')
+  console.log(send)
+  res.send(send);
+  // res.send(result.text)
+});
+
 const SendEmail = require("./task/demo.js");
 SendEmail.start();
 console.log("定时任务开始");
