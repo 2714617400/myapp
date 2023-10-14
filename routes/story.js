@@ -65,4 +65,59 @@ router.delete("/:id", async function (req, res) {
   });
 });
 
+router.get("/:id/chapter", function (req, res, next) {
+  const id = req.params.id;
+  Story.findById(id, { __v: 0 }).exec(function (err, data) {
+    if (err) {
+      res.status(400).send("查询异常");
+    } else {
+      res.send(data.chapters);
+    }
+  });
+});
+
+// 新增或修改章节
+router.post("/:id/chapter", function (req, res) {
+  const id = req.params.id,
+    body = req.body;
+  console.log(body, "body");
+
+  Story.findOneAndUpdate(
+    { _id: id, "chapters.title": { $ne: body.title } }, // 查询条件
+    {
+      $addToSet: {
+        // 使用$addToSet来确保不添加重复的子文档
+        chapters: body,
+      },
+    },
+    { new: true, upsert: true }, // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
+    (err, updatedParent) => {
+      if (err) {
+        console.error(err);
+        res.status(400).send(err);
+      } else {
+        res.send(updatedParent);
+      }
+    }
+  );
+});
+
+router.delete("/:id/chapter/:child_id", function (req, res, next) {
+  const id = req.params.id,
+    child_id = req.params.child_id;
+
+  Story.findByIdAndUpdate(
+    id,
+    { $pull: { chapters: { _id: child_id } } },
+    { new: true },
+    (err, updatedParent) => {
+      if (err) {
+        res.status(400).send(err);
+      } else {
+        res.send(updatedParent);
+      }
+    }
+  );
+});
+
 module.exports = router;
