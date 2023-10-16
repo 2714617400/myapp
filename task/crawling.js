@@ -10,22 +10,35 @@ const storeId = 448;
 const startPageNum = 350154;
 let defaultEncoding = "gbk";
 
-let currentPageNum = startPageNum;
+let nextPage = `${url}/${storeId}/${startPageNum}.html`;
 let isFinish = true;
 const task = async function () {
   if (!isFinish) {
     console.log("当前爬取任务还在进行中...");
     return;
   }
+  if (!nextPage) {
+    console.log("爬取完成, 请终止爬虫程序");
+    return;
+  }
   isFinish = false;
 
-  let result = await superagent
-    .get(`${url}/${storeId}/${currentPageNum}.html`)
-    .responseType("arraybuffer");
+  // 拉取网页源码
+  let result = await superagent.get(nextPage).responseType("arraybuffer");
   result.charset && (defaultEncoding = result.charset);
   const utf8String = iconv.decode(result.body, defaultEncoding);
   const $ = cheerio.load(utf8String);
 
+  // 获取下一章地址
+  const next = $(".page_chapter a")
+    .filter((i, v) => {
+      return $(v).text() === "下一章";
+    })
+    .first()
+    .attr("href");
+  nextPage = next ? url + next : "";
+
+  // 获取正文和标题
   const content = $("#content").text(); // 正文
   const title = $(".content h1").text(); // 正文
   const textArr = content.split("\n");
@@ -37,33 +50,36 @@ const task = async function () {
     }
   }
 
+  // 生成章节数据
   const Chapters = {
     title: title,
     content: filter.join("\n"),
   };
-  isFinish = true;
-  currentPageNum++;
 
+  // 保存到数据库
   const id = "652b63b3275da67aecc25db5",
     body = Chapters;
 
-  Story.findOneAndUpdate(
-    { _id: id, "chapters.title": { $ne: body.title } }, // 查询条件
-    {
-      $addToSet: {
-        // 使用$addToSet来确保不添加重复的子文档
-        chapters: body,
+  try {
+    const save = await Story.findOneAndUpdate(
+      { _id: id, "chapters.title": { $ne: body.title } }, // 查询条件
+      {
+        $addToSet: {
+          // 使用$addToSet来确保不添加重复的子文档
+          chapters: body,
+        },
       },
-    },
-    { new: false, upsert: true }, // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
-    (err, updatedParent) => {
-      if (err) {
-        console.error('异常：' + err);
-      } else {
-        console.log(title + " -- 爬取完成");
-      }
+      { new: false, upsert: true } // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
+    );
+    if (save) {
+      console.log(title + " -- 爬取完成");
+      isFinish = true;
+    } else {
+      console.error("数据插入异常：" + save);
     }
-  );
+  } catch (e) {
+    console.error("数据库异常：" + e);
+  }
 
   //   await send("17774657825@163.com", "每个星期三中午12点 发送邮件");
   //   return console.log(
