@@ -18,19 +18,28 @@ const iconv = require("iconv-lite");
 
 const url = "http://www.ibiquge.cc";
 const storeId = 448;
-const startPageNum = 350156;
+const startPageNum = 350154;
 let defaultEncoding = "gbk";
 app.get("/", async (req, res) => {
   let result = await superagent
-    .get("http://www.ibiquge.cc/448/350156.html")
+    .get(`${url}/${storeId}/${startPageNum}.html`)
     .responseType("arraybuffer");
   result.charset && (defaultEncoding = result.charset);
   const utf8String = iconv.decode(result.body, defaultEncoding);
   const $ = cheerio.load(utf8String);
+  let next = $(".page_chapter a")
+    .filter((i, v) => {
+      return $(v).text() === "下一章";
+    })
+    .first()
+    .attr("href");
+  next && (next = url + next);
+  console.log(next);
+  res.send(utf8String);
+  return;
 
   const content = $("#content").text(); // 正文
   const title = $(".content h1").text(); // 正文
-  console.log(title, "标题");
   const textArr = content.split("\n");
   const filter = [];
   for (let i = 0; i < textArr.length; i++) {
@@ -39,9 +48,13 @@ app.get("/", async (req, res) => {
       filter.push(t);
     }
   }
-  console.log(result.charset);
   console.log(filter);
-  res.send(`<pre style="text-indent: 25px;">${filter.join("\n\r")}</pre>`);
+  const Chapters = {
+    title: title,
+    content: filter.join("\n"),
+  };
+  res.send(Chapters);
+  // res.send(`<pre style="text-indent: 25px;">${Chapters}</pre>`);
   // res.send(result.text)
 });
 
@@ -50,9 +63,9 @@ app.get("/", async (req, res) => {
 // console.log("定时任务开始");
 
 // 爬虫任务
-const Crawling = require("./task/crawling.js");
-Crawling.start();
-console.log("爬虫启动!");
+// const Crawling = require("./task/crawling.js");
+// Crawling.start();
+// console.log("爬虫启动!");
 
 // 连接数据库
 require("./plugins/mongoose");
