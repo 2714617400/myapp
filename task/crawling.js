@@ -1,5 +1,6 @@
 const TaskScheduler = require("../plugins/schedule/index.js");
 const { send } = require("../plugins/nodemailer/index.js");
+const Story = require("../models/story.js");
 const superagent = require("superagent");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
@@ -42,7 +43,27 @@ const task = async function () {
   };
   isFinish = true;
   currentPageNum++;
-  console.log(title + " -- 爬取完成");
+
+  const id = "652b63b3275da67aecc25db5",
+    body = Chapters;
+
+  Story.findOneAndUpdate(
+    { _id: id, "chapters.title": { $ne: body.title } }, // 查询条件
+    {
+      $addToSet: {
+        // 使用$addToSet来确保不添加重复的子文档
+        chapters: body,
+      },
+    },
+    { new: false, upsert: true }, // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
+    (err, updatedParent) => {
+      if (err) {
+        console.error('异常：' + err);
+      } else {
+        console.log(title + " -- 爬取完成");
+      }
+    }
+  );
 
   //   await send("17774657825@163.com", "每个星期三中午12点 发送邮件");
   //   return console.log(
@@ -53,5 +74,5 @@ const task = async function () {
   //   );
 };
 
-module.exports = new TaskScheduler("10 * * * * *", task);
+module.exports = new TaskScheduler("*/5 * * * * *", task);
 // module.exports = new TaskScheduler('0 0 12 ? * WED', task);
