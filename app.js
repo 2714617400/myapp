@@ -21,9 +21,9 @@ app.get("/", async (req, res) => {
 // console.log("定时任务开始");
 
 // 爬虫任务
-const Crawling = require("./task/crawling.js");
-Crawling.start();
-console.log("爬虫启动!");
+// const Crawling = require("./task/crawling.js");
+// Crawling.start();
+// console.log("爬虫启动!");
 
 // 连接数据库
 require("./plugins/mongoose");

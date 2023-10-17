@@ -1,4 +1,5 @@
 var express = require("express");
+const mongoose = require("mongoose");
 var router = express.Router();
 const Story = require("../models/story.js");
 const upload = require("../plugins/multer");
@@ -43,7 +44,7 @@ router.post("/", function (req, res) {
 router.put("/:id", function (req, res) {
   const id = req.params.id,
     body = req.body;
-  Story.findByIdAndUpdate(id, body, { new: true }, function (err, data) {
+  Story.findByIdAndUpdate(id, body, { new: false }, function (err, data) {
     if (err) res.status(400).send("更新失败");
     else {
       res.send(data);
@@ -65,15 +66,85 @@ router.delete("/:id", async function (req, res) {
   });
 });
 
-router.get("/:id/chapter", function (req, res, next) {
-  const id = req.params.id;
-  Story.findById(id, { __v: 0 }).exec(function (err, data) {
-    if (err) {
-      res.status(400).send("查询异常");
-    } else {
-      res.send(data.chapters);
-    }
-  });
+const FilterChapter = {
+  __v: 0,
+  content: 0,
+};
+router.get("/:id/chapter", async function (req, res, next) {
+  const id = req.params.id,
+    page = +req.query.page || 1,
+    perPage = +req.query.per_page || 10;
+
+  // 创建聚合管道，用于分页查询子文档
+  const pipeline = [
+    {
+      $match: {
+        _id: mongoose.Types.ObjectId(id), // 根据父文档 ID 过滤
+      },
+    },
+    {
+      $project: {
+        _id: 0, // 排除父文档的 _id
+        chapters: {
+          $map: {
+            input: "$chapters",
+            as: "child",
+            in: {
+              // 这里使用 $mergeObjects 来排除特定字段
+              title: "$$child.title",
+              id: "$$child._id",
+            },
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        chapters: {
+          $slice: ["$chapters", (page - 1) * perPage, perPage],
+        },
+      },
+    },
+  ];
+  const pipelineOfCount = [
+    {
+      $match: {
+        _id: mongoose.Types.ObjectId(id), // 根据父文档 ID 过滤
+      },
+    },
+    {
+      $unwind: "$chapters",
+    },
+    {
+      $count: "total", // 使用 $count 统计子文档总数
+    },
+  ];
+  try {
+    let docList = await Story.aggregate(pipeline).exec();
+    let result = await Story.aggregate(pipelineOfCount).exec();
+
+    res.send({
+      code: 0,
+      data: {
+        list: docList[0]?.chapters,
+        total: result[0]?.total,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(400).send("查询异常");
+  }
+  console.log("end");
+  // Story.findById(id, FilterChapter)
+  //   .skip((page - 1) * perPage) // 跳过前 (page - 1) 页的文档
+  //   .limit(perPage) // 限制每页返回的文档数量
+  //   .exec(function (err, data) {
+  //     if (err) {
+  //       res.status(400).send("查询异常");
+  //     } else {
+  //       res.send(data.chapters);
+  //     }
+  //   });
 });
 
 // 新增或修改章节
@@ -118,6 +189,39 @@ router.delete("/:id/chapter/:child_id", function (req, res, next) {
       }
     }
   );
+});
+
+router.get("/:id/chapter/:child_id", function (req, res, next) {
+  const id = req.params.id,
+    child_id = req.params.child_id;
+
+  // 使用聚合管道查询指定条件的子文档
+  Story.aggregate([
+    {
+      $match: { _id: mongoose.Types.ObjectId(id) },
+    },
+    {
+      $unwind: "$chapters", // 将嵌套数组展开
+    },
+    {
+      $match: {
+        "chapters._id": mongoose.Types.ObjectId(child_id) /* 你要查询的条件 */,
+      },
+    },
+    {
+      $group: {
+        _id: "$_id",
+        chapters: { $push: "$chapters" },
+      },
+    },
+  ]).exec((err, result) => {
+    if (err) {
+      res.status(400).send(err);
+    } else {
+      const comments = result[0]?.comments;
+      res.send(result);
+    }
+  });
 });
 
 module.exports = router;

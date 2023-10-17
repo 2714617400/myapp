@@ -5,6 +5,7 @@ const superagent = require("superagent");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
 
+const id = "652de266ec31335ff757b85a";
 const url = "http://www.ibiquge.cc";
 const storeId = 448;
 const startPageNum = 350154;
@@ -57,8 +58,7 @@ const task = async function () {
   };
 
   // 保存到数据库
-  const id = "652b63b3275da67aecc25db5",
-    body = Chapters;
+  const body = Chapters;
 
   try {
     const save = await Story.findOneAndUpdate(
@@ -79,6 +79,7 @@ const task = async function () {
     }
   } catch (e) {
     console.error("数据库异常：" + e);
+    isFinish = true;
   }
 
   //   await send("17774657825@163.com", "每个星期三中午12点 发送邮件");
