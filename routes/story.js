@@ -11,6 +11,7 @@ function copy(target, sounce) {
   }
 }
 
+// 故事列表
 const Filter = {
   __v: 0,
   chapters: 0,
@@ -26,6 +27,7 @@ router.get("/", function (req, res, next) {
   });
 });
 
+// 新增故事
 router.post("/", function (req, res) {
   const body = req.body;
   console.log(body, "body");
@@ -41,6 +43,7 @@ router.post("/", function (req, res) {
   });
 });
 
+// 修改故事
 router.put("/:id", function (req, res) {
   const id = req.params.id,
     body = req.body;
@@ -52,6 +55,7 @@ router.put("/:id", function (req, res) {
   });
 });
 
+// 删除故事
 router.delete("/:id", async function (req, res) {
   const id = req.params.id;
   Story.findById(id, async function (err, doc) {
@@ -66,6 +70,7 @@ router.delete("/:id", async function (req, res) {
   });
 });
 
+// 章节列表
 const FilterChapter = {
   __v: 0,
   content: 0,
@@ -173,6 +178,7 @@ router.post("/:id/chapter", function (req, res) {
   );
 });
 
+// 删除章节
 router.delete("/:id/chapter/:child_id", function (req, res, next) {
   const id = req.params.id,
     child_id = req.params.child_id;
@@ -191,6 +197,7 @@ router.delete("/:id/chapter/:child_id", function (req, res, next) {
   );
 });
 
+// 获取章节内容
 router.get("/:id/chapter/:child_id", function (req, res, next) {
   const id = req.params.id,
     child_id = req.params.child_id;
@@ -218,8 +225,12 @@ router.get("/:id/chapter/:child_id", function (req, res, next) {
     if (err) {
       res.status(400).send(err);
     } else {
-      const comments = result[0]?.comments;
-      res.send(result);
+      const chapters = result[0]?.chapters;
+      // res.send(chapters);
+      res.send({
+        code: 0,
+        data: chapters[0],
+      });
     }
   });
 });
