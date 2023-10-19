@@ -4,11 +4,11 @@ const Story = require("../models/story.js");
 const superagent = require("superagent");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
-
-const id = "652de266ec31335ff757b85a";
+// http://www.ibiquge.cc/502/322816.html
+const id = "6530d37db2667f4b47bdcf0d";
 const url = "http://www.ibiquge.cc";
-const storeId = 448;
-const startPageNum = 350154;
+const storeId = 502;
+const startPageNum = 322816;
 let defaultEncoding = "gbk";
 
 let nextPage = `${url}/${storeId}/${startPageNum}.html`;
@@ -91,5 +91,5 @@ const task = async function () {
   //   );
 };
 
-module.exports = new TaskScheduler("*/5 * * * * *", task);
+module.exports = new TaskScheduler("*/3 * * * * *", task);
 // module.exports = new TaskScheduler('0 0 12 ? * WED', task);
