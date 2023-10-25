@@ -235,4 +235,42 @@ router.get("/:id/chapter/:child_id", function (req, res, next) {
   });
 });
 
+// 获取下一章章节内容
+router.get("/:id/chapter/:child_id/next", function (req, res, next) {
+  const id = req.params.id,
+    child_id = req.params.child_id;
+  console.log("开始查询下一章");
+
+  Story.findById(id, { "chapters.content": 0 }, (err, parent) => {
+    console.log("查询所在故事");
+    if (err) {
+      res.status(400).send(err);
+    } else {
+      // 在父文档中查找包含指定ID的嵌套文档
+      const nestedDocument = parent.chapters.find(
+        (doc) => doc._id.toString() === child_id
+      );
+      console.log("已查询到下一章");
+
+      // 获取下一个嵌套文档的索引
+      const currentIndex = parent.chapters.indexOf(nestedDocument);
+      const nextIndex = currentIndex + 1;
+
+      if (nextIndex < parent.chapters.length) {
+        const nextNestedDocument = parent.chapters[nextIndex];
+        res.send({
+          code: 0,
+          data: nextNestedDocument,
+        });
+      } else {
+        res.send({
+          code: 1,
+          msg: "没有下一章",
+          data: {},
+        });
+      }
+    }
+  });
+});
+
 module.exports = router;
