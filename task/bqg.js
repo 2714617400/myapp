@@ -15,7 +15,7 @@ const Reptile = (bookId, startPage, storyId, interval) => {
     isFinish = true,
     target = `${URL}/${bookId}/${startPage}.html`;
   const Task = async function () {
-    if (isFinish) {
+    if (!isFinish) {
       console.log("任务进行中...");
       return;
     }
@@ -30,7 +30,7 @@ const Reptile = (bookId, startPage, storyId, interval) => {
     // 获取目标网页源码
     const Source = await superagent.get(target).responseType("arraybuffer");
     Source.charset && (charset = Source.charset);
-    const UTF8Data = iconv.decode(result.body, charset);
+    const UTF8Data = iconv.decode(Source.body, charset);
     const $ = cheerio.load(UTF8Data);
 
     // 获取下一章网址
@@ -56,6 +56,9 @@ const Reptile = (bookId, startPage, storyId, interval) => {
       }
     }
 
+    console.log("爬取章节", Title);
+    isFinish = true;
+
     // 保存到数据库
     if (storyId) {
       const Chapters = {
@@ -65,7 +68,7 @@ const Reptile = (bookId, startPage, storyId, interval) => {
 
       try {
         const Save = await Story.findOneAndUpdate(
-          { _id: id, "chapters.title": { $ne: body.title } }, // 查询条件
+          { _id: storyId, "chapters.title": { $ne: body.title } }, // 查询条件
           {
             $addToSet: {
               // 使用$addToSet来确保不添加重复的子文档

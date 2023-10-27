@@ -16,6 +16,17 @@ app.get("/", async (req, res) => {
   res.send("Hi :)");
 });
 
+const BQG = require("./task/bqg.js");
+const pachong = BQG(502, 1088448, "", 10);
+app.get("/start", async (req, res) => {
+  pachong.start();
+  res.send("start!");
+});
+app.get("/stop", async (req, res) => {
+  pachong.stop();
+  res.send("stop!");
+});
+
 // const SendEmail = require("./task/demo.js");
 // SendEmail.start();
 // console.log("定时任务开始");
