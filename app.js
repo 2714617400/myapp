@@ -17,14 +17,20 @@ app.get("/", async (req, res) => {
 });
 
 const BQG = require("./task/bqg.js");
-const pachong = BQG(502, 1088448, "", 10);
+let pachong = "";
 app.get("/start", async (req, res) => {
+  let { story_id, start_page_no, interval } = req.query;
+  pachong = BQG(story_id, start_page_no, "", interval);
   pachong.start();
   res.send("start!");
 });
 app.get("/stop", async (req, res) => {
-  pachong.stop();
-  res.send("stop!");
+  if (!pachong) {
+    res.send("没有运行中的爬虫");
+  } else {
+    pachong.stop();
+    res.send("stop!");
+  }
 });
 
 // const SendEmail = require("./task/demo.js");
