@@ -4,7 +4,10 @@ const superagent = require("superagent");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
 
-const URL = "http://www.ibiquge.cc";
+const URL = "http://www.ibiquge.cc",
+  NEXT_CHAPTER_EL = ".page_chapter a",
+  TITLE_EL = ".content h1",
+  CONTENT_EL = "#content";
 const Reptile = (bookId, startPage, storyId, interval) => {
   if (!(bookId && startPage)) {
     console.error("BQG爬虫需要启动参数!");
@@ -34,7 +37,7 @@ const Reptile = (bookId, startPage, storyId, interval) => {
     const $ = cheerio.load(UTF8Data);
 
     // 获取下一章网址
-    const NextChapter = $(".page_chapter a")
+    const NextChapter = $(NEXT_CHAPTER_EL)
       .filter((i, v) => {
         return $(v).text() === "下一章";
       })
@@ -43,8 +46,8 @@ const Reptile = (bookId, startPage, storyId, interval) => {
     target = NextChapter ? `${URL}${NextChapter}` : "";
 
     // 获取章节标题和章节内容
-    const Title = $(".content h1").text(); // 标题
-    const Content = $("#content").text(); // 内容
+    const Title = $(TITLE_EL).text(); // 标题
+    const Content = $(CONTENT_EL).text(); // 内容
 
     // 处理章节内容数据
     const PList = Content.split("\n");

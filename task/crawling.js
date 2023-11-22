@@ -8,7 +8,7 @@ const iconv = require("iconv-lite");
 const id = "6530d37db2667f4b47bdcf0d";
 const url = "http://www.ibiquge.cc";
 const storeId = 502;
-const startPageNum = 322816;
+const startPageNum = 1088448;
 let defaultEncoding = "gbk";
 
 let nextPage = `${url}/${storeId}/${startPageNum}.html`;
