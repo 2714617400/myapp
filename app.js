@@ -11,16 +11,36 @@ Object.assign(global, utils);
 
 var app = express();
 
+// app.use(function (req, res, next) {
+//   console.log("我是中间件");
+//   next();
+// });
+
+const superagent = require("superagent");
+const cheerio = require("cheerio");
+const iconv = require("iconv-lite");
 //测试代码
 app.get("/", async (req, res) => {
-  res.send("Hi :)");
+  // res.send("Hi :)");
+
+  const source = await superagent
+    .get("http://www.ibiquge.cc/404/373858.html")
+    .responseType("arraybuffer");
+  source.charset && (this.charset = source.charset);
+  const UTF8Data = iconv.decode(source.body, this.charset);
+  let $ = cheerio.load(UTF8Data);
+  $.load("#book");
+  // let data = $("#book");
+  let title = $(".content").children().first();
+  console.log(title, "UTF8Data");
+  res.send(title.text());
 });
 
 const BQG = require("./task/bqg.js");
 let pachong = "";
 app.get("/start", async (req, res) => {
-  let { story_id, start_page_no, interval } = req.query;
-  pachong = BQG(story_id, start_page_no, "", interval);
+  let { story_id, start_page_no, interval, id } = req.query;
+  pachong = BQG(story_id, start_page_no, id, interval);
   pachong.start();
   res.send("start!");
 });
@@ -32,6 +52,9 @@ app.get("/stop", async (req, res) => {
     res.send("stop!");
   }
 });
+
+// const test = require("./task/newpc.js");
+// test.getDirectory();
 
 // const SendEmail = require("./task/demo.js");
 // SendEmail.start();

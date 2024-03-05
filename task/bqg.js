@@ -4,6 +4,10 @@ const superagent = require("superagent");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
 
+const header = {
+  "user-agent":
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.95 Safari/537.36 QIHU 360SE",
+};
 const URL = "http://www.ibiquge.cc",
   NEXT_CHAPTER_EL = ".page_chapter a",
   TITLE_EL = ".content h1",
@@ -31,7 +35,10 @@ const Reptile = (bookId, startPage, storyId, interval) => {
     isFinish = false;
 
     // 获取目标网页源码
-    const Source = await superagent.get(target).responseType("arraybuffer");
+    const Source = await superagent
+      .get(target)
+      .set(header)
+      .responseType("arraybuffer");
     Source.charset && (charset = Source.charset);
     const UTF8Data = iconv.decode(Source.body, charset);
     const $ = cheerio.load(UTF8Data);
@@ -60,7 +67,7 @@ const Reptile = (bookId, startPage, storyId, interval) => {
     }
 
     console.log("爬取章节", Title);
-    isFinish = true;
+    // isFinish = true;
 
     // 保存到数据库
     if (storyId) {
@@ -71,18 +78,18 @@ const Reptile = (bookId, startPage, storyId, interval) => {
 
       try {
         const Save = await Story.findOneAndUpdate(
-          { _id: storyId, "chapters.title": { $ne: body.title } }, // 查询条件
+          { _id: storyId, "chapters.title": { $ne: Chapters.title } }, // 查询条件
           {
             $addToSet: {
               // 使用$addToSet来确保不添加重复的子文档
-              chapters: body,
+              chapters: Chapters,
             },
           },
           { new: false, upsert: true } // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
         );
         if (Save) {
           isFinish = true;
-          console.log(title + " -- 爬取完成");
+          console.log(Title + " -- 爬取完成");
         } else {
           console.error("数据插入异常：" + Save);
         }

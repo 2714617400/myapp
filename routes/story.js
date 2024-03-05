@@ -62,8 +62,8 @@ router.delete("/:id", async function (req, res) {
     if (err || !doc)
       return res.status(400).send(err ? "查找失败" : "未找到该故事");
 
-    if (doc.chapters && doc.chapters.length !== 0)
-      return res.status(400).send("故事内还有章节,请先删除章节");
+    // if (doc.chapters && doc.chapters.length !== 0)
+    // return res.status(400).send("故事内还有章节,请先删除章节");
     let result = await Story.deleteOne({ _id: id });
     if (!result.acknowledged) return res.status(400).send(result);
     res.send("删除成功");
