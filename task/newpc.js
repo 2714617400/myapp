@@ -6,7 +6,22 @@ const TaskScheduler = require("../plugins/schedule/index.js");
 let fs = require("fs");
 const path = require("path");
 
-const WebSite = "http://www.ibiquge.cc";
+const WebSiteOpt = {
+  biquge: {
+    url: "http://www.ibiquge.cc",
+    el_book_name: "#maininfo #info h1",
+    el_directory: ".listmain dl dd a",
+    el_title: '"#book .content h1',
+    el_content: "#book #content",
+  },
+  lingdian: {
+    url: "http://www.ldxsw.net",
+    el_book_name: "#main #info h1",
+    el_directory: ".zjbox dl dd a",
+    el_title: "#main h1",
+    el_content: "#main #readbox #content",
+  },
+};
 class BookSea {
   constructor(opt) {
     this.url = opt.url;
@@ -17,16 +32,32 @@ class BookSea {
     this.chapters = [];
     this.index = 0;
     this.bookName = null;
+    this.storyId = "";
     this.lock = false;
+    this.siteOpt = WebSiteOpt[opt.site || "biquge"];
+    if (opt.site === "lingdian") {
+      this.siteOpt.url = opt.url;
+    }
   }
 
   async start() {
     console.log("Book Sea! start!");
+
+    // 拉取目录
     await this.getDirectory();
-    // let result = await this.requestData();
-    // return result;
+
+    // 创建文件夹
+    let createStates = await createDir(
+      path.join(__dirname, `../public/books/${this.bookName}`)
+    );
+    if (createStates) return;
+
+    // 创建故事
+    let story_id = await createStory(this.bookName);
+    if (!story_id) return;
+    this.storyId = story_id;
+
     this.schedule = new TaskScheduler(`*/${this.interval} * * * * *`, () => {
-      console.log("executing");
       this.requestData();
     });
     this.schedule.start();
@@ -48,13 +79,18 @@ class BookSea {
     const UTF8Data = iconv.decode(source.body, this.charset);
     const $ = cheerio.load(UTF8Data);
     this.chapters = [];
-    this.bookName = $("#maininfo #info h1").text();
+    this.bookName = $(this.siteOpt.el_book_name)
+      .contents()
+      .filter(function () {
+        return this.nodeType == 3;
+      })
+      .text();
     if (!this.bookName) {
       console.log("无法获取到书名!");
       this.stop();
       return;
     }
-    let content = $(".listmain dl dd a");
+    let content = $(this.siteOpt.el_directory);
     content.each((i, el) => {
       this.chapters.push({
         title: $(el).text(),
@@ -66,13 +102,14 @@ class BookSea {
 
   // 请求数据
   async requestData() {
-    if(this.lock) return;
+    if (this.lock) return;
     if (this.index >= this.chapters.length) {
       this.stop();
       return;
     }
     this.lock = true;
-    let url = WebSite + this.chapters[this.index].href;
+    let url = this.siteOpt.url + this.chapters[this.index].href;
+    console.log("请求网址: ", url);
     const source = await superagent.get(url).responseType("arraybuffer");
     source.charset && (this.charset = source.charset);
     const UTF8Data = iconv.decode(source.body, this.charset);
@@ -90,8 +127,8 @@ class BookSea {
     let $ = data,
       title,
       content;
-    title = $("#book .content h1").text();
-    content = $("#book #content").text();
+    title = $(this.siteOpt.el_title).text();
+    content = $(this.siteOpt.el_content).text();
     return {
       title,
       content,
@@ -101,47 +138,76 @@ class BookSea {
   // 存储数据
   async saveData(data) {
     let { title, content } = data;
-    // fs.mkdirSync(path.join(__dirname, this.bookName));
-    // if (!fs.accessSync(`./${this.bookName}`)) {
-    //   console.log("mik");
-    //   fs.mkdirSync(`./${this.bookName}`);
-    // }
-    if (this.index === 1) {
-      fs.mkdirSync(path.join(__dirname + `/${this.bookName}`));
-    }
-    fs.writeFileSync(
-      path.join(__dirname + `/${this.bookName}/${title}.txt`),
-      content
-    );
-    // if (storyId) {
-    //   const Chapters = {
-    //     title: Title,
-    //     content: RList.join("\n"),
-    //   };
+    let story_id = this.storyId;
+    // 写入文件
+    fs.writeFile(
+      path.join(__dirname, `../public/books/${this.bookName}/${title}.txt`),
+      content,
+      async (err) => {
+        let status = err ? "保存失败" : "保存成功";
+        console.log(title + " " + status);
 
-    //   try {
-    //     const Save = await Story.findOneAndUpdate(
-    //       { _id: storyId, "chapters.title": { $ne: Chapters.title } }, // 查询条件
-    //       {
-    //         $addToSet: {
-    //           // 使用$addToSet来确保不添加重复的子文档
-    //           chapters: Chapters,
-    //         },
-    //       },
-    //       { new: false, upsert: true } // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
-    //     );
-    //     if (Save) {
-    //       isFinish = true;
-    //       console.log(Title + " -- 爬取完成");
-    //     } else {
-    //       console.error("数据插入异常：" + Save);
-    //     }
-    //   } catch (e) {
-    //     console.error("数据库异常：" + e);
-    //     isFinish = true;
-    //   }
-    // }
+        try {
+          const Save = await Story.findOneAndUpdate(
+            { _id: story_id, "chapters.title": { $ne: data.title } }, // 查询条件
+            {
+              $addToSet: {
+                // 使用$addToSet来确保不添加重复的子文档
+                chapters: data,
+              },
+            },
+            { new: false, upsert: true } // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
+          );
+          if (Save) {
+            console.log(title + " -- 爬取完成");
+          } else {
+            console.error("数据插入异常：" + Save);
+          }
+        } catch (e) {
+          console.error("数据库异常：" + e);
+        }
+      }
+    );
   }
+}
+
+function createDir(url) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(url, (err, dirs) => {
+      if (!err) return resolve(0); // 文件夹已存在
+      fs.mkdir(url, (err2) => {
+        if (err2) {
+          console.log("文件夹创建失败: ", err2);
+          return reject(1);
+        } else return resolve(0);
+      });
+    });
+  });
+}
+
+function createStory(title) {
+  return new Promise((resolve, reject) => {
+    Story.find({ title }).exec((err, data) => {
+      console.log(err, data);
+      if (err) {
+        reject("");
+      } else {
+        if (data.length) {
+          resolve(data[0].id);
+        } else {
+          const insert = new Story();
+          insert.title = title;
+          insert.save((err2, data2) => {
+            if (err2) {
+              reject("");
+            } else {
+              resolve(data2.id);
+            }
+          });
+        }
+      }
+    });
+  });
 }
 
 function initBookSea(opt) {

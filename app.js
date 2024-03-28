@@ -27,10 +27,12 @@ app.get("/", async (req, res) => {
   // res.send("Hi :)");
 
   const bookSea = new newpc.initBookSea({
-    url: "http://www.ibiquge.cc/762/",
+    // url: "http://www.ibiquge.cc/762/",
+    url: "http://www.ldxsw.net/book_13491/",
+    site: "lingdian",
   });
   bookSea.start();
-  res.send('start!');
+  res.send("start!");
   // const source = await superagent
   //   .get("http://www.ibiquge.cc/404/373858.html")
   //   .responseType("arraybuffer");

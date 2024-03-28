@@ -131,8 +131,8 @@ router.get("/:id/chapter", async function (req, res, next) {
     res.send({
       code: 0,
       data: {
-        list: docList[0].chapters,
-        total: result[0].total,
+        list: docList.length ? docList[0].chapters : [],
+        total: result.length ? result[0].total : 0,
       },
     });
   } catch (e) {
