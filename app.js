@@ -29,8 +29,8 @@ app.get("/", async (req, res) => {
   const bookSea = new newpc.initBookSea({
     url: "http://www.ibiquge.cc/762/",
   });
-  let result = await bookSea.start();
-  res.send(result);
+  bookSea.start();
+  res.send('start!');
   // const source = await superagent
   //   .get("http://www.ibiquge.cc/404/373858.html")
   //   .responseType("arraybuffer");

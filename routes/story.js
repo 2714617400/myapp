@@ -131,8 +131,8 @@ router.get("/:id/chapter", async function (req, res, next) {
     res.send({
       code: 0,
       data: {
-        list: docList[0]?.chapters,
-        total: result[0]?.total,
+        list: docList[0].chapters,
+        total: result[0].total,
       },
     });
   } catch (e) {
@@ -225,7 +225,7 @@ router.get("/:id/chapter/:child_id", function (req, res, next) {
     if (err) {
       res.status(400).send(err);
     } else {
-      const chapters = result[0]?.chapters;
+      const chapters = result[0].chapters;
       // res.send(chapters);
       res.send({
         code: 0,

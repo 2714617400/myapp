@@ -17,25 +17,28 @@ class BookSea {
     this.chapters = [];
     this.index = 0;
     this.bookName = null;
+    this.lock = false;
   }
 
   async start() {
     console.log("Book Sea! start!");
     await this.getDirectory();
-    let result = await this.requestData();
-    return result;
-    // this.schedule = new TaskScheduler(`*/${this.interval} * * * * *`, () => {
-    //   console.log("executing");
-    // });
+    // let result = await this.requestData();
+    // return result;
+    this.schedule = new TaskScheduler(`*/${this.interval} * * * * *`, () => {
+      console.log("executing");
+      this.requestData();
+    });
+    this.schedule.start();
   }
 
   stop() {
-    // if (this.schedule) {
-    //   this.schedule.stop();
-    //   console.log("schedule is stopped.");
-    // } else {
-    //   console.log("no schedule.");
-    // }
+    if (this.schedule) {
+      this.schedule.stop();
+      console.log("schedule is stopped.");
+    } else {
+      console.log("no schedule.");
+    }
   }
 
   // 请求目录
@@ -48,6 +51,7 @@ class BookSea {
     this.bookName = $("#maininfo #info h1").text();
     if (!this.bookName) {
       console.log("无法获取到书名!");
+      this.stop();
       return;
     }
     let content = $(".listmain dl dd a");
@@ -62,10 +66,12 @@ class BookSea {
 
   // 请求数据
   async requestData() {
+    if(this.lock) return;
     if (this.index >= this.chapters.length) {
       this.stop();
       return;
     }
+    this.lock = true;
     let url = WebSite + this.chapters[this.index].href;
     const source = await superagent.get(url).responseType("arraybuffer");
     source.charset && (this.charset = source.charset);
@@ -75,7 +81,7 @@ class BookSea {
 
     let data = this.extractData($);
     this.saveData(data);
-
+    this.lock = false;
     return data;
   }
 
@@ -100,11 +106,11 @@ class BookSea {
     //   console.log("mik");
     //   fs.mkdirSync(`./${this.bookName}`);
     // }
-    if (this.index === 0) {
-      fs.mkdirSync(path.resolve("../public/books", `./${this.bookName}`));
+    if (this.index === 1) {
+      fs.mkdirSync(path.join(__dirname + `/${this.bookName}`));
     }
     fs.writeFileSync(
-      path.resolve("../public/books", `./${this.bookName}/${title}.txt`),
+      path.join(__dirname + `/${this.bookName}/${title}.txt`),
       content
     );
     // if (storyId) {
