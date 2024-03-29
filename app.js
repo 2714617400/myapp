@@ -22,29 +22,20 @@ const iconv = require("iconv-lite");
 
 let fs = require("fs");
 const newpc = require("./task/newpc.js");
+const conversion = require("./utils/conversion.js");
 //测试代码
 app.get("/", async (req, res) => {
   // res.send("Hi :)");
 
-  const bookSea = new newpc.initBookSea({
-    // url: "http://www.ibiquge.cc/762/",
-    url: "http://www.ldxsw.net/book_13491/",
-    site: "lingdian",
-  });
-  bookSea.start();
+  // const bookSea = new newpc.initBookSea({
+  //   // url: "http://www.ibiquge.cc/762/",
+  //   url: "http://www.ldxsw.net/book_13491/",
+  //   site: "lingdian",
+  // });
+  // bookSea.start();
+  conversion();
+
   res.send("start!");
-  // const source = await superagent
-  //   .get("http://www.ibiquge.cc/404/373858.html")
-  //   .responseType("arraybuffer");
-  // source.charset && (this.charset = source.charset);
-  // const UTF8Data = iconv.decode(source.body, this.charset);
-  // let $ = cheerio.load(UTF8Data);
-  // $.load("#book");
-  // // let data = $("#book");
-  // let title = $(".content").children().first();
-  // console.log(title, "UTF8Data");
-  // fs.writeFileSync(`./public/${title.text()}.txt`, "Rezero");
-  // res.send(title.text());
 });
 
 const BQG = require("./task/bqg.js");
