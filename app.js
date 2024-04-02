@@ -27,15 +27,15 @@ const conversion = require("./utils/conversion.js");
 app.get("/", async (req, res) => {
   // res.send("Hi :)");
 
-  // const bookSea = new newpc.initBookSea({
-  //   // url: "http://www.ibiquge.cc/762/",
-  //   url: "http://www.ldxsw.net/book_13491/",
-  //   site: "lingdian",
-  // });
-  // bookSea.start();
-  conversion();
+  const bookSea = new newpc.initBookSea({
+    // url: "http://www.ibiquge.cc/762/",
+    url: "http://www.ldxsw.net/book_13491/",
+    site: "lingdian",
+  });
+  bookSea.start();
+  // conversion();
 
-  res.send("start!");
+  res.send("start!" + new Date().getTime());
 });
 
 const BQG = require("./task/bqg.js");

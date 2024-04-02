@@ -3,6 +3,7 @@ const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
 const Story = require("../models/story.js");
 const TaskScheduler = require("../plugins/schedule/index.js");
+const { initTimer } = require("../utils/index.js");
 let fs = require("fs");
 const path = require("path");
 
@@ -22,6 +23,9 @@ const WebSiteOpt = {
     el_content: "#main #readbox #content",
   },
 };
+
+let timer1 = initTimer();
+let timer2 = initTimer();
 class BookSea {
   constructor(opt) {
     this.url = opt.url;
@@ -74,7 +78,9 @@ class BookSea {
 
   // 请求目录
   async getDirectory() {
+    timer1.start();
     const source = await superagent.get(this.url).responseType("arraybuffer");
+    console.log("拉取目录耗时: " + timer1.stop() + "s");
     source.charset && (this.charset = source.charset);
     const UTF8Data = iconv.decode(source.body, this.charset);
     const $ = cheerio.load(UTF8Data);
@@ -109,8 +115,10 @@ class BookSea {
     }
     this.lock = true;
     let url = this.siteOpt.url + this.chapters[this.index].href;
-    console.log("请求网址: ", url);
+    // console.log("请求网址: ", url);
+    timer1.start();
     const source = await superagent.get(url).responseType("arraybuffer");
+    console.log("请求内容耗时: " + timer1.stop() + "s");
     source.charset && (this.charset = source.charset);
     const UTF8Data = iconv.decode(source.body, this.charset);
     const $ = cheerio.load(UTF8Data);
@@ -119,7 +127,6 @@ class BookSea {
     let data = this.extractData($);
     this.saveData(data);
     this.lock = false;
-    return data;
   }
 
   // 提取数据
@@ -147,6 +154,7 @@ class BookSea {
         let status = err ? "保存失败" : "保存成功";
         console.log(title + " " + status);
 
+        timer2.start();
         try {
           const Save = await Story.findOneAndUpdate(
             { _id: story_id, "chapters.title": { $ne: data.title } }, // 查询条件
@@ -166,6 +174,7 @@ class BookSea {
         } catch (e) {
           console.error("数据库异常：" + e);
         }
+        console.error("插入数据库耗时: " + timer2.stop() + "s");
       }
     );
   }

@@ -21,7 +21,29 @@ function shuffleArray(array) {
   return newArray;
 }
 
+/**
+ * 计算耗时
+ */
+class Timer {
+  constructor() {
+    this.begin = 0;
+  }
+  start() {
+    this.begin = new Date().getTime();
+  }
+  stop() {
+    let end = new Date().getTime();
+    let consume = (end - this.begin) / 1000;
+    this.begin = 0;
+    return consume;
+  }
+}
+function initTimer() {
+  return new Timer();
+}
+
 module.exports = {
   transList,
   shuffleArray,
+  initTimer,
 };
