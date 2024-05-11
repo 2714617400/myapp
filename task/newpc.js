@@ -58,11 +58,16 @@ class BookSea {
 
     // 创建故事
     let story_id = await createStory(this.bookName);
-    if (!story_id) return;
-    this.storyId = story_id;
+    // if (!story_id) return;
+    // this.storyId = story_id;
 
     this.schedule = new TaskScheduler(`*/${this.interval} * * * * *`, () => {
-      this.requestData();
+      try {
+        this.requestData();
+      } catch {
+        console.error("请求报错, 重新请求");
+        this.lock = false;
+      }
     });
     this.schedule.start();
   }
@@ -145,36 +150,39 @@ class BookSea {
   // 存储数据
   async saveData(data) {
     let { title, content } = data;
-    let story_id = this.storyId;
+    // let story_id = this.storyId;
     // 写入文件
     fs.writeFile(
-      path.join(__dirname, `../public/books/${this.bookName}/${title}.txt`),
+      path.join(
+        __dirname,
+        `../public/books/${this.bookName}/No.${this.index} ${title}.txt`
+      ),
       content,
       async (err) => {
         let status = err ? "保存失败" : "保存成功";
         console.log(title + " " + status);
 
-        timer2.start();
-        try {
-          const Save = await Story.findOneAndUpdate(
-            { _id: story_id, "chapters.title": { $ne: data.title } }, // 查询条件
-            {
-              $addToSet: {
-                // 使用$addToSet来确保不添加重复的子文档
-                chapters: data,
-              },
-            },
-            { new: false, upsert: true } // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
-          );
-          if (Save) {
-            console.log(title + " -- 爬取完成");
-          } else {
-            console.error("数据插入异常：" + Save);
-          }
-        } catch (e) {
-          console.error("数据库异常：" + e);
-        }
-        console.error("插入数据库耗时: " + timer2.stop() + "s");
+        // timer2.start();
+        // try {
+        //   const Save = await Story.findOneAndUpdate(
+        //     { _id: story_id, "chapters.title": { $ne: data.title } }, // 查询条件
+        //     {
+        //       $addToSet: {
+        //         // 使用$addToSet来确保不添加重复的子文档
+        //         chapters: data,
+        //       },
+        //     },
+        //     { new: false, upsert: true } // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
+        //   );
+        //   if (Save) {
+        //     console.log(title + " -- 爬取完成");
+        //   } else {
+        //     console.error("数据插入异常：" + Save);
+        //   }
+        // } catch (e) {
+        //   console.error("数据库异常：" + e);
+        // }
+        // console.error("插入数据库耗时: " + timer2.stop() + "s");
       }
     );
   }
