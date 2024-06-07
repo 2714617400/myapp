@@ -33,7 +33,7 @@ const StorySchema = new mongoose.Schema(
     description: String, // 描述或简介
     cover_image: {
       type: String,
-      get: toUrl,
+      // get: toUrl,
     }, // 封面
     genres: Array, // 标签或类型
     chapters: [ChapterSchema], // 故事章节
