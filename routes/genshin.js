@@ -92,11 +92,11 @@ router.delete("/:id", async function (req, res) {
       res.status(400).send("查找失败");
     } else {
       // 删除文件
-      try {
-        fs.unlinkSync(`./public/uploads/${doc.toObject().avatar}`);
-      } catch {
-        console.log("这个文件文件不存在,或许已删除");
-      }
+      // try {
+      //   fs.unlinkSync(`./public/images/${doc.toObject().avatar}`);
+      // } catch {
+      //   console.log("这个文件文件不存在,或许已删除");
+      // }
 
       // 删除数据库数据
       Role.deleteOne({ _id: id }, function (err, doc) {

@@ -1,5 +1,5 @@
 /node_modules
-/public/uploads
+/public/images
 /public/books
 package-lock.json
 /.history

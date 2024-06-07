@@ -1,27 +1,26 @@
 var express = require("express");
 var router = express.Router();
 const upload = require("../plugins/multer");
-const { FILE_HOST, IMAGE_PRE } = process.env;
-const PRE = FILE_HOST + IMAGE_PRE;
 
-router.get("/", function (req, res, next) {
-  res.send("You Can !");
-});
-
-// 上传头像
-router.post("/avatar", upload.single("avatar"), function (req, res) {
+// 上传图片
+router.post("/file", upload.single("file"), function (req, res) {
+  console.log("上传文件: ", req.file);
+  const file = req.file;
+  let pathArr = file.destination.split("/");
   let result = {
-    url: PRE + req.file.filename,
-    name: req.file.filename,
+    url: `${pathArr[pathArr.length - 1]}/${file.filename}`,
+    name: file.filename,
+    size: (file.size / 1024).toFixed(2),
   };
   res.send(result);
 });
 
 // 上传图片--最多同时上传15张
-router.post("/images", upload.array("images", 15), function (req, res) {
+router.post("/files", upload.array("files", 15), function (req, res) {
+  let pathArr = req.file.destination.split("/");
   let images = req.files.map((v) => {
     return {
-      url: PRE + v.filename,
+      url: `${pathArr[pathArr.length - 1]}/${v.filename}`,
       name: v.filename,
     };
   });

@@ -1,14 +1,28 @@
 const multer = require("multer");
 const path = require("path");
 
+function getNowFormatDate() {
+  var date = new Date();
+  var seperator1 = "-";
+  var month = date.getMonth() + 1;
+  var strDate = date.getDate();
+  if (month >= 1 && month <= 9) {
+    month = "0" + month;
+  }
+  if (strDate >= 0 && strDate <= 9) {
+    strDate = "0" + strDate;
+  }
+  var currentdate =
+    date.getFullYear() + seperator1 + month + seperator1 + strDate;
+  return currentdate.toString();
+}
+var datatime = "public/images/" + getNowFormatDate();
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./public/uploads/"); // 设置文件存储目录
-  },
+  destination: datatime,
   filename: (req, file, cb) => {
     let extname = path.extname(file.originalname); // 获取扩展名
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9); // 随机字符串
-    cb(null, file.fieldname + "-" + uniqueSuffix + extname); // 设置文件名
+    cb(null, Date.now() + extname); // 设置文件名
   },
 });
 

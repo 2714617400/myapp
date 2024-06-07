@@ -101,7 +101,7 @@ var storyRouter = require("./routes/story");
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/genshin", genshinRouter);
-app.use("/file", uploadRouter);
+app.use("/upload", uploadRouter);
 app.use("/story", storyRouter);
 
 // 404
