@@ -25,16 +25,21 @@ const newpc = require("./task/newpc.js");
 const conversion = require("./utils/conversion.js");
 //测试代码
 app.get("/", async (req, res) => {
-  // res.send("Hi :)");
+  // const bookSea = new newpc.initBookSea({
+  //   // url: "http://www.ibiquge.cc/762/",
+  //   url: "http://www.ldxsw.net/book_13491/",
+  //   site: "lingdian",
+  // });
+  // bookSea.start();
+  // // conversion();
 
-  const bookSea = new newpc.initBookSea({
-    // url: "http://www.ibiquge.cc/762/",
-    url: "http://www.ldxsw.net/book_13491/",
-    site: "lingdian",
-  });
-  bookSea.start();
-  // conversion();
+  console.log("当前环境: ", process.env);
+  res.send("start!" + new Date().getTime());
+});
 
+const { handle } = require("./utils/text.js");
+app.get("/demo", async (req, res) => {
+  handle();
   res.send("start!" + new Date().getTime());
 });
 
