@@ -11,12 +11,12 @@ const ChapterSchema = new mongoose.Schema({
   title: {
     type: String,
     trim: true,
-    max: [100, "故事章节不能过长"],
+    max: [100, "故事章节不能超过100字"],
     required: [true, "故事章节不能为空"],
   },
   content: {
     type: String,
-    max: [3000, "章节内容不能超过3万字"],
+    max: [30000, "章节内容不能超过3万字"],
   },
 });
 

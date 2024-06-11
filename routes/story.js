@@ -2,8 +2,6 @@ var express = require("express");
 const mongoose = require("mongoose");
 var router = express.Router();
 const Story = require("../models/story.js");
-const upload = require("../plugins/multer");
-const fs = require("fs");
 
 function copy(target, sounce) {
   for (let k in sounce) {
@@ -17,14 +15,50 @@ const Filter = {
   chapters: 0,
 };
 router.get("/", function (req, res, next) {
-  Story.find({}, Filter).exec(function (err, data) {
-    // lean() 返回原生js对象,而不是mongoose文档对象
-    if (err) {
-      res.status(400).send("查询异常");
-    } else {
-      res.send(data);
-    }
-  });
+  let currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
+  let pageSize =
+    parseInt(req.query.pageSize) > 0 ? parseInt(req.query.pageSize) : 5;
+  let skip = (currentPage - 1) * pageSize;
+  console.log("枫叶: ", req.query, skip);
+  Story.aggregate()
+    .match({}) // 根据需要筛选父文档
+    .skip(skip) // 跳过文档
+    .limit(pageSize) // 限制文档数量
+    .project({
+      title: 1, // 选择你想要返回的父文档字段
+      cover_image: 1,
+      updatedAt: 1,
+      createdAt: 1,
+      id: "$_id", // 重命名
+      _id: 0, // 明确不返回_id
+      chaptersCount: { $size: "$chapters" }, // 计算嵌套文档的数量
+    })
+    .exec((err, data) => {
+      if (err) {
+        res.status(400).send({
+          status: 1,
+          msg: err,
+        });
+      } else {
+        Story.countDocuments({}, (err2, count) => {
+          if (err2)
+            return res.status(400).send({
+              status: 1,
+              msg: err,
+            });
+          res.json({
+            status: 0,
+            msg: "",
+            result: {
+              list: data,
+              page: currentPage,
+              pageSize: pageSize,
+              total: count,
+            },
+          });
+        });
+      }
+    });
 });
 
 // 新增故事
@@ -78,7 +112,7 @@ const FilterChapter = {
 router.get("/:id/chapter", async function (req, res, next) {
   const id = req.params.id,
     page = +req.query.page || 1,
-    perPage = +req.query.per_page || 10;
+    perPage = +req.query.pageSize || 10;
 
   // 创建聚合管道，用于分页查询子文档
   const pipeline = [
@@ -129,17 +163,18 @@ router.get("/:id/chapter", async function (req, res, next) {
     let result = await Story.aggregate(pipelineOfCount).exec();
 
     res.send({
-      code: 0,
-      data: {
+      status: 0,
+      result: {
         list: docList.length ? docList[0].chapters : [],
         total: result.length ? result[0].total : 0,
       },
     });
-  } catch (e) {
-    console.log(e);
-    res.status(400).send("查询异常");
+  } catch (err) {
+    res.status(400).send({
+      status: 1,
+      msg: err,
+    });
   }
-  console.log("end");
   // Story.findById(id, FilterChapter)
   //   .skip((page - 1) * perPage) // 跳过前 (page - 1) 页的文档
   //   .limit(perPage) // 限制每页返回的文档数量
