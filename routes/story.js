@@ -19,9 +19,11 @@ router.get("/", function (req, res, next) {
   let pageSize =
     parseInt(req.query.pageSize) > 0 ? parseInt(req.query.pageSize) : 5;
   let skip = (currentPage - 1) * pageSize;
+  let regex = new RegExp(req.query.title || "", "i");
+  let matchFilter = req.query.title ? { title: { $regex: regex } } : {};
   console.log("枫叶: ", req.query, skip);
   Story.aggregate()
-    .match({}) // 根据需要筛选父文档
+    .match(matchFilter) // 根据需要筛选父文档
     .skip(skip) // 跳过文档
     .limit(pageSize) // 限制文档数量
     .project({
@@ -29,20 +31,23 @@ router.get("/", function (req, res, next) {
       cover_image: 1,
       updatedAt: 1,
       createdAt: 1,
+      author: 1,
+      description: 1,
+      genres: 1,
       id: "$_id", // 重命名
       _id: 0, // 明确不返回_id
       chaptersCount: { $size: "$chapters" }, // 计算嵌套文档的数量
     })
     .exec((err, data) => {
       if (err) {
-        res.status(400).send({
+        res.status(400).json({
           status: 1,
           msg: err,
         });
       } else {
-        Story.countDocuments({}, (err2, count) => {
+        Story.countDocuments(matchFilter, (err2, count) => {
           if (err2)
-            return res.status(400).send({
+            return res.status(400).json({
               status: 1,
               msg: err,
             });
@@ -70,9 +75,15 @@ router.post("/", function (req, res) {
 
   insert.save(function (err, data) {
     if (err) {
-      res.status(400).json(err.code === 11000 ? "故事重复" : err);
+      res.status(400).json({
+        status: 1,
+        msg: err.code === 11000 ? "故事重复" : err,
+      });
     } else {
-      res.send(data);
+      res.json({
+        status: 0,
+        msg: "操作成功",
+      });
     }
   });
 });
@@ -82,9 +93,16 @@ router.put("/:id", function (req, res) {
   const id = req.params.id,
     body = req.body;
   Story.findByIdAndUpdate(id, body, { new: false }, function (err, data) {
-    if (err) res.status(400).send("更新失败");
+    if (err)
+      res.status(400).json({
+        status: 1,
+        msg: "更新失败",
+      });
     else {
-      res.send(data);
+      res.json({
+        status: 0,
+        msg: "操作成功",
+      });
     }
   });
 });
@@ -94,13 +112,23 @@ router.delete("/:id", async function (req, res) {
   const id = req.params.id;
   Story.findById(id, async function (err, doc) {
     if (err || !doc)
-      return res.status(400).send(err ? "查找失败" : "未找到该故事");
+      return res.status(400).json({
+        status: 1,
+        msg: err ? "查找失败" : "未找到该故事",
+      });
 
     // if (doc.chapters && doc.chapters.length !== 0)
-    // return res.status(400).send("故事内还有章节,请先删除章节");
+    // return res.status(400).json("故事内还有章节,请先删除章节");
     let result = await Story.deleteOne({ _id: id });
-    if (!result.acknowledged) return res.status(400).send(result);
-    res.send("删除成功");
+    if (!result.acknowledged)
+      return res.status(400).json({
+        status: 1,
+        msg: result,
+      });
+    res.json({
+      status: 0,
+      msg: "操作成功",
+    });
   });
 });
 
@@ -162,7 +190,7 @@ router.get("/:id/chapter", async function (req, res, next) {
     let docList = await Story.aggregate(pipeline).exec();
     let result = await Story.aggregate(pipelineOfCount).exec();
 
-    res.send({
+    res.json({
       status: 0,
       result: {
         list: docList.length ? docList[0].chapters : [],
@@ -170,7 +198,7 @@ router.get("/:id/chapter", async function (req, res, next) {
       },
     });
   } catch (err) {
-    res.status(400).send({
+    res.status(400).json({
       status: 1,
       msg: err,
     });
@@ -201,13 +229,18 @@ router.post("/:id/chapter", function (req, res) {
         chapters: body,
       },
     },
-    { new: true, upsert: true }, // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
-    (err, updatedParent) => {
+    { new: false, upsert: true }, // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
+    (err) => {
       if (err) {
-        console.error(err);
-        res.status(400).send(err);
+        res.status(400).json({
+          status: 1,
+          msg: err,
+        });
       } else {
-        res.send(updatedParent);
+        res.json({
+          status: 0,
+          msg: "操作成功",
+        });
       }
     }
   );
@@ -221,12 +254,18 @@ router.delete("/:id/chapter/:child_id", function (req, res, next) {
   Story.findByIdAndUpdate(
     id,
     { $pull: { chapters: { _id: child_id } } },
-    { new: true },
-    (err, updatedParent) => {
+    { new: false },
+    (err) => {
       if (err) {
-        res.status(400).send(err);
+        res.status(400).json({
+          status: 1,
+          msg: err,
+        });
       } else {
-        res.send(updatedParent);
+        res.json({
+          status: 0,
+          msg: "操作成功",
+        });
       }
     }
   );
@@ -258,13 +297,15 @@ router.get("/:id/chapter/:child_id", function (req, res, next) {
     },
   ]).exec((err, result) => {
     if (err) {
-      res.status(400).send(err);
+      res.status(400).json({
+        status: 1,
+        msg: err,
+      });
     } else {
       const chapters = result[0].chapters;
-      // res.send(chapters);
-      res.send({
-        code: 0,
-        data: chapters[0],
+      res.json({
+        status: 0,
+        result: chapters[0],
       });
     }
   });
@@ -279,13 +320,15 @@ router.get("/:id/chapter/:child_id/next", function (req, res, next) {
   Story.findById(id, { "chapters.content": 0 }, (err, parent) => {
     console.log("查询所在故事");
     if (err) {
-      res.status(400).send(err);
+      res.status(400).json({
+        status: 1,
+        msg: err,
+      });
     } else {
       // 在父文档中查找包含指定ID的嵌套文档
       const nestedDocument = parent.chapters.find(
         (doc) => doc._id.toString() === child_id
       );
-      console.log("已查询到下一章");
 
       // 获取下一个嵌套文档的索引
       const currentIndex = parent.chapters.indexOf(nestedDocument);
@@ -293,15 +336,14 @@ router.get("/:id/chapter/:child_id/next", function (req, res, next) {
 
       if (nextIndex < parent.chapters.length) {
         const nextNestedDocument = parent.chapters[nextIndex];
-        res.send({
-          code: 0,
-          data: nextNestedDocument,
+        res.json({
+          status: 0,
+          result: nextNestedDocument,
         });
       } else {
-        res.send({
-          code: 1,
+        res.json({
+          status: 1,
           msg: "没有下一章",
-          data: {},
         });
       }
     }
