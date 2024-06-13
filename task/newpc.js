@@ -100,6 +100,8 @@ class BookSea {
       console.log("无法获取到书名!");
       this.stop();
       return;
+    } else {
+      this.bookName = Buffer.from(this.bookName.trim(), "utf8"); // 转换成utf8编码,否则文件打不开
     }
     let content = $(this.siteOpt.el_directory);
     content.each((i, el) => {
@@ -152,11 +154,9 @@ class BookSea {
     let { title, content } = data;
     // let story_id = this.storyId;
     // 写入文件
+    const fileName = Buffer.from(`No.${this.index} ${title}`, "utf8");
     fs.writeFile(
-      path.join(
-        __dirname,
-        `../public/books/${this.bookName}/No.${this.index} ${title}.txt`
-      ),
+      path.join(__dirname, `../public/books/${this.bookName}/${fileName}.txt`),
       content,
       async (err) => {
         let status = err ? "保存失败" : "保存成功";
