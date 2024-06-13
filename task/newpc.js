@@ -11,6 +11,8 @@ const WebSiteOpt = {
   biquge: {
     url: "http://www.ibiquge.cc",
     el_book_name: "#maininfo #info h1",
+    el_author: "#maininfo #info a",
+    el_cover: "#bookdetail #picbox img",
     el_directory: ".listmain dl dd a",
     el_title: '"#book .content h1',
     el_content: "#book #content",
