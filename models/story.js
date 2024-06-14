@@ -30,13 +30,11 @@ const StorySchema = new mongoose.Schema(
       required: [true, "请输入故事名称"],
     },
     author: String, // 作者
-    description: String, // 描述或简介
-    cover_image: {
-      type: String,
-      // get: toUrl,
-    }, // 封面
-    genres: Array, // 标签或类型
-    chapters: [ChapterSchema], // 故事章节
+    cover: String, // 封面
+    description: String, // 简介
+    genres: Array, // 类型
+    tag: Array, // 标签
+    chapters: Array, // 故事章节
   },
   {
     timestamps: true, // 自动添加createdAt和updatedAt字段

@@ -28,15 +28,17 @@ router.get("/", function (req, res, next) {
     .limit(pageSize) // 限制文档数量
     .project({
       title: 1, // 选择你想要返回的父文档字段
-      cover_image: 1,
+      cover: 1,
       updatedAt: 1,
       createdAt: 1,
       author: 1,
       description: 1,
       genres: 1,
+      tag: 1,
+      chapters: 0,
       id: "$_id", // 重命名
       _id: 0, // 明确不返回_id
-      chaptersCount: { $size: "$chapters" }, // 计算嵌套文档的数量
+      chaptersCount: { $size: "$chapters" }, // 计算嵌套文档或数组的长度
     })
     .exec((err, data) => {
       if (err) {
@@ -69,15 +71,12 @@ router.get("/", function (req, res, next) {
 // 新增故事
 router.post("/", function (req, res) {
   const body = req.body;
-  console.log(body, "body");
-  const insert = new Story();
-  copy(insert, body);
-
+  const insert = new Story(body);
   insert.save(function (err, data) {
     if (err) {
       res.status(400).json({
         status: 1,
-        msg: err.code === 11000 ? "故事重复" : err,
+        msg: err.code === 11000 ? "重复添加" : err,
       });
     } else {
       res.json({
@@ -92,7 +91,7 @@ router.post("/", function (req, res) {
 router.put("/:id", function (req, res) {
   const id = req.params.id,
     body = req.body;
-  Story.findByIdAndUpdate(id, body, { new: false }, function (err, data) {
+  Story.findByIdAndUpdate(id, body, { new: false }, function (err) {
     if (err)
       res.status(400).json({
         status: 1,
@@ -117,8 +116,6 @@ router.delete("/:id", async function (req, res) {
         msg: err ? "查找失败" : "未找到该故事",
       });
 
-    // if (doc.chapters && doc.chapters.length !== 0)
-    // return res.status(400).json("故事内还有章节,请先删除章节");
     let result = await Story.deleteOne({ _id: id });
     if (!result.acknowledged)
       return res.status(400).json({
@@ -203,16 +200,6 @@ router.get("/:id/chapter", async function (req, res, next) {
       msg: err,
     });
   }
-  // Story.findById(id, FilterChapter)
-  //   .skip((page - 1) * perPage) // 跳过前 (page - 1) 页的文档
-  //   .limit(perPage) // 限制每页返回的文档数量
-  //   .exec(function (err, data) {
-  //     if (err) {
-  //       res.status(400).send("查询异常");
-  //     } else {
-  //       res.send(data.chapters);
-  //     }
-  //   });
 });
 
 // 新增或修改章节

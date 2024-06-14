@@ -11,18 +11,22 @@ const WebSiteOpt = {
   biquge: {
     url: "http://www.ibiquge.cc",
     el_book_name: "#maininfo #info h1",
-    el_author: "#maininfo #info a",
-    el_cover: "#bookdetail #picbox img",
+    el_author: "",
+    el_cover: "",
+    el_desc: "",
     el_directory: ".listmain dl dd a",
     el_title: '"#book .content h1',
     el_content: "#book #content",
   },
   lingdian: {
     url: "http://www.ldxsw.net",
-    el_book_name: "#main #info h1",
+    el_book_name: "#info h1",
+    el_author: "#info a",
+    el_cover: "#picbox img",
+    el_desc: "#intro",
     el_directory: ".zjbox dl dd a",
-    el_title: "#main h1",
-    el_content: "#main #readbox #content",
+    el_title: "#main>h1",
+    el_content: "#content",
   },
 };
 
@@ -37,9 +41,17 @@ class BookSea {
 
     this.chapters = [];
     this.index = 0;
-    this.bookName = null;
     this.storyId = "";
     this.lock = false;
+    this.book = {
+      title: "",
+      author: "",
+      cover: "",
+      description: "",
+      genres: [],
+      tag: [],
+      chapters: [],
+    };
     this.siteOpt = WebSiteOpt[opt.site || "biquge"];
     if (opt.site === "lingdian") {
       this.siteOpt.url = opt.url;
@@ -51,23 +63,33 @@ class BookSea {
 
     // 拉取目录
     await this.getDirectory();
+    if (this.chapters.length === 0) {
+      console.error("目录是空的");
+      return;
+    }
 
     // 创建文件夹
     let createStates = await createDir(
-      path.join(__dirname, `../public/books/${this.bookName}`)
+      path.join(__dirname, `../public/books/${this.book.title}`)
     );
-    if (createStates) return;
+    if (createStates) {
+      console.error(this.book.title + "文件夹创建失败");
+      return;
+    }
 
     // 创建故事
-    let story_id = await createStory(this.bookName);
-    // if (!story_id) return;
-    // this.storyId = story_id;
+    let story_id = await createStory(this.book);
+    if (!story_id) {
+      console.error(this.book.title + "文档创建失败");
+      return;
+    }
+    this.storyId = story_id;
 
     this.schedule = new TaskScheduler(`*/${this.interval} * * * * *`, () => {
       try {
         this.requestData();
-      } catch {
-        console.error("请求报错, 重新请求");
+      } catch (e) {
+        console.error("数据请求异常: ", e);
         this.lock = false;
       }
     });
@@ -77,9 +99,9 @@ class BookSea {
   stop() {
     if (this.schedule) {
       this.schedule.stop();
-      console.log("schedule is stopped.");
+      console.log("定时器已停止");
     } else {
-      console.log("no schedule.");
+      console.log("没有需要停止的定时器");
     }
   }
 
@@ -92,19 +114,30 @@ class BookSea {
     const UTF8Data = iconv.decode(source.body, this.charset);
     const $ = cheerio.load(UTF8Data);
     this.chapters = [];
-    this.bookName = $(this.siteOpt.el_book_name)
+    this.book.title = $(this.siteOpt.el_book_name)
       .contents()
       .filter(function () {
-        return this.nodeType == 3;
+        return this.nodeType === 3;
       })
-      .text();
-    if (!this.bookName) {
-      console.log("无法获取到书名!");
+      .text(); // 这种父元素包含子元素的结构,无法通过text()直接获取到父元素的文本,因为text()会返回父元素下的所有文本(包括子元素的问题).使用contents遍历父元素下的所有元素包括文本节点和注释节点,使用filter过滤出父元素的文本节点,然后对文本节点通过text()获取文本
+    console.log("书名: ", this.book.title);
+    if (!this.book.title) {
+      console.error("书名获取失败!");
       this.stop();
       return;
     } else {
-      this.bookName = Buffer.from(this.bookName.trim(), "utf8"); // 转换成utf8编码,否则文件打不开
+      this.book.title = Buffer.from(this.book.title.trim(), "utf8"); // 转换成utf8编码,否则文件打不开
     }
+
+    let author = $(this.siteOpt.el_author).first().text();
+    console.log("作者: ", author);
+    let cover = $(this.siteOpt.el_cover).first().attr("src");
+    console.log("封面: ", cover);
+    let desc = $(this.siteOpt.el_desc).text();
+    console.log("描述: ", desc);
+    this.book.author = author ? author.trim() : "";
+    this.book.cover = cover ? cover.trim() : "";
+    this.book.description = desc ? desc.trim() : "";
     let content = $(this.siteOpt.el_directory);
     content.each((i, el) => {
       this.chapters.push({
@@ -112,13 +145,15 @@ class BookSea {
         href: $(el).attr("href"),
       });
     });
-    return this.chapters;
+    console.log("目录: ", this.chapters.length);
   }
 
   // 请求数据
   async requestData() {
     if (this.lock) return;
     if (this.index >= this.chapters.length) {
+      console.log(this.book.title + "所有章节已全部获取");
+      saveChapters(this.book);
       this.stop();
       return;
     }
@@ -143,7 +178,7 @@ class BookSea {
     let $ = data,
       title,
       content;
-    title = $(this.siteOpt.el_title).text();
+    title = $(this.siteOpt.el_title).first().text()?.trim();
     content = $(this.siteOpt.el_content).text();
     return {
       title,
@@ -154,37 +189,17 @@ class BookSea {
   // 存储数据
   async saveData(data) {
     let { title, content } = data;
-    // let story_id = this.storyId;
     // 写入文件
     const fileName = Buffer.from(`No.${this.index} ${title}`, "utf8");
     fs.writeFile(
-      path.join(__dirname, `../public/books/${this.bookName}/${fileName}.txt`),
+      path.join(
+        __dirname,
+        `../public/books/${this.book.title}/${fileName}.txt`
+      ),
       content,
-      async (err) => {
+      (err) => {
         let status = err ? "保存失败" : "保存成功";
         console.log(title + " " + status);
-
-        // timer2.start();
-        // try {
-        //   const Save = await Story.findOneAndUpdate(
-        //     { _id: story_id, "chapters.title": { $ne: data.title } }, // 查询条件
-        //     {
-        //       $addToSet: {
-        //         // 使用$addToSet来确保不添加重复的子文档
-        //         chapters: data,
-        //       },
-        //     },
-        //     { new: false, upsert: true } // 选项，new:true表示返回更新后的文档，upsert:true表示如果文档不存在则创建
-        //   );
-        //   if (Save) {
-        //     console.log(title + " -- 爬取完成");
-        //   } else {
-        //     console.error("数据插入异常：" + Save);
-        //   }
-        // } catch (e) {
-        //   console.error("数据库异常：" + e);
-        // }
-        // console.error("插入数据库耗时: " + timer2.stop() + "s");
       }
     );
   }
@@ -192,11 +207,11 @@ class BookSea {
 
 function createDir(url) {
   return new Promise((resolve, reject) => {
-    fs.readdir(url, (err, dirs) => {
+    fs.readdir(url, (err) => {
       if (!err) return resolve(0); // 文件夹已存在
       fs.mkdir(url, (err2) => {
         if (err2) {
-          console.log("文件夹创建失败: ", err2);
+          console.error("文件夹创建失败: ", err2);
           return reject(1);
         } else return resolve(0);
       });
@@ -204,18 +219,17 @@ function createDir(url) {
   });
 }
 
-function createStory(title) {
+function createStory(book) {
   return new Promise((resolve, reject) => {
-    Story.find({ title }).exec((err, data) => {
-      console.log(err, data);
+    Story.find({ title: book.title }).exec((err, data) => {
       if (err) {
+        console.log("文档创建失败: ", err);
         reject("");
       } else {
         if (data.length) {
           resolve(data[0].id);
         } else {
-          const insert = new Story();
-          insert.title = title;
+          const insert = new Story(book);
           insert.save((err2, data2) => {
             if (err2) {
               reject("");
@@ -224,6 +238,35 @@ function createStory(title) {
             }
           });
         }
+      }
+    });
+  });
+}
+
+function saveChapters(book) {
+  return new Promise((resolve, reject) => {
+    Story.findById(this.storyId).exec((err, data) => {
+      if (err || data.length === 0) {
+        reject("");
+      } else {
+        let url = path.join(__dirname, `../public/books/${book.title}/`);
+        fs.readdir(url, { encoding: "utf8" }, (err1, files) => {
+          if (err1) {
+            console.error(book.title + "目录读取失败: ", err1);
+            return;
+          } else {
+            insert = data[0];
+            insert.chapters = files;
+            insert.save((err3, data2) => {
+              if (err3) {
+                reject("");
+              } else {
+                console.log("章节保存成功");
+                resolve(data2.id);
+              }
+            });
+          }
+        });
       }
     });
   });

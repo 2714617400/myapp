@@ -29,6 +29,7 @@ app.get("/", async (req, res) => {
     // url: "http://www.ibiquge.cc/762/",
     url: "http://www.ldxsw.net/book_13491/",
     site: "lingdian",
+    interval: 1,
   });
   bookSea.start();
   // conversion();
