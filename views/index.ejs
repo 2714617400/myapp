@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 100%;
+      }
+      body {
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .title {
+        width: 100%;
+        position: sticky;
+        top: 0;
+        background-color: #ffffff;
+        font-size: 1.2rem;
+        /* padding: 5px 0; */
+        box-sizing: border-box;
+        text-align: center;
+      }
+      .content {
+        width: 100%;
+        background-color: #e9faff;
+        white-space: pre-wrap;
+        padding: 20px 16px;
+        text-align: justify;
+        word-wrap: break-word;
+        box-sizing: border-box;
+      }
+      .footer {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 20px 0;
+      }
+      .footer a {
+        display: inline-block;
+        font-size: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="title"><%= title %></div>
+    <div class="content"><%= content %></div>
+    <div class="footer">
+      <a href="/mwnb?index=<%= pre %>">上一章</a>
+      <a href="/mwnb?index=<%= next %>">下一章</a>
+    </div>
+  </body>
+</html>

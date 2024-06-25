@@ -3,6 +3,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const ejs = require("ejs");
 require("./plugins/dotenv"); // 导入环境变量
 const config = require("./global.config")["development"];
 global.CONF = config;
@@ -10,6 +11,11 @@ const utils = require("./utils/index");
 Object.assign(global, utils);
 
 var app = express();
+// 指定EJS为模板引擎
+app.engine("ejs", ejs.__express);
+
+// 设置默认的模板文件后缀为.ejs
+app.set("view engine", "ejs");
 
 // app.use(function (req, res, next) {
 //   console.log("我是中间件");
@@ -27,7 +33,7 @@ const conversion = require("./utils/conversion.js");
 app.get("/", async (req, res) => {
   const bookSea = new newpc.initBookSea({
     // url: "http://www.ibiquge.cc/762/",
-    url: "http://www.ldxsw.net/book_13491/",
+    url: "http://www.ldxsw.net/book_4431/",
     site: "lingdian",
     interval: 1,
   });
@@ -38,10 +44,50 @@ app.get("/", async (req, res) => {
   res.send("start!" + new Date().getTime());
 });
 
-const { handle } = require("./utils/text.js");
+// const demo = require("./task/demo.js");
+// demo.start();
+
+const { makeBook, createBookJson } = require("./utils/book.js");
 app.get("/demo", async (req, res) => {
-  handle();
+  // makeBook();
+  // createBookJson("魔王奶爸");
   res.send("start!" + new Date().getTime());
+});
+
+app.get("/mwnb", async (req, res) => {
+  const query = req.query;
+  let index = Number(query.index);
+  if (isNaN(index)) return res.status(400).json("索引不存在");
+  const dirPath = path.join(__dirname, `./public/books/魔王奶爸`);
+  const jsonPath = path.join(__dirname, `./public/books/魔王奶爸/info.json`);
+
+  fs.readFile(jsonPath, (err, data) => {
+    if (err) return res.status(400).json(err);
+    else {
+      let jsonData;
+      try {
+        jsonData = JSON.parse(data);
+      } catch {
+        return res.status(400).json("json解析失败");
+      }
+      let item = jsonData.directory[index - 1];
+      const chartPath = path.join(
+        __dirname,
+        `./public/books/魔王奶爸/${item.fileName}`
+      );
+      fs.readFile(chartPath, (err2, data2) => {
+        if (err2) res.status(400).json("文件读取失败");
+        else {
+          let pre = index - 1 || 1;
+          let next =
+            index + 1 <= jsonData.directory.length
+              ? index + 1
+              : jsonData.directory.length;
+          res.render("index", { title: item.title, content: data2, pre, next });
+        }
+      });
+    }
+  });
 });
 
 const BQG = require("./task/bqg.js");
@@ -99,11 +145,13 @@ var usersRouter = require("./routes/users");
 var genshinRouter = require("./routes/genshin");
 var uploadRouter = require("./routes/upload");
 var storyRouter = require("./routes/story");
+var timerRouter = require("./routes/timer");
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/genshin", genshinRouter);
 app.use("/upload", uploadRouter);
 app.use("/story", storyRouter);
+app.use("/timer", timerRouter);
 
 // 404
 app.use(function (req, res, next) {

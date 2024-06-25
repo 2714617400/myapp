@@ -14,7 +14,7 @@ const Filter = {
   __v: 0,
   chapters: 0,
 };
-router.get("/", function (req, res, next) {
+router.get("/", function (req, res) {
   let currentPage = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
   let pageSize =
     parseInt(req.query.pageSize) > 0 ? parseInt(req.query.pageSize) : 5;
@@ -35,9 +35,9 @@ router.get("/", function (req, res, next) {
       description: 1,
       genres: 1,
       tag: 1,
-      chapters: 0,
-      id: "$_id", // 重命名
-      _id: 0, // 明确不返回_id
+      // chapters: 0,
+      // _id: 0, // 明确不返回_id
+      // id: "$_id", // 重命名
       chaptersCount: { $size: "$chapters" }, // 计算嵌套文档或数组的长度
     })
     .exec((err, data) => {

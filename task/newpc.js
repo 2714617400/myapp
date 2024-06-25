@@ -1,11 +1,14 @@
+let fs = require("fs");
+const path = require("path");
 const superagent = require("superagent");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
+
 const Story = require("../models/story.js");
 const TaskScheduler = require("../plugins/schedule/index.js");
+
 const { initTimer } = require("../utils/index.js");
-let fs = require("fs");
-const path = require("path");
+const { make } = require("../utils/book.js");
 
 const WebSiteOpt = {
   biquge: {
@@ -38,9 +41,10 @@ class BookSea {
     this.charset = opt.charset || "gbk";
     this.schedule = null;
     this.interval = Number(opt.interval) || 3;
+    this.timer = null;
 
     this.chapters = [];
-    this.index = 0;
+    this.index = 931;
     this.storyId = "";
     this.lock = false;
     this.book = {
@@ -154,6 +158,14 @@ class BookSea {
     if (this.index >= this.chapters.length) {
       console.log(this.book.title + "所有章节已全部获取");
       saveChapters(this.book);
+      this.timer && clearTimeout(this.timer);
+      // saveInfo({
+      //   title: this.book.title,
+      //   directory: [],
+      //   index: this.index,
+      //   url: '',
+      //   site: '',
+      // });
       this.stop();
       return;
     }
@@ -161,16 +173,30 @@ class BookSea {
     let url = this.siteOpt.url + this.chapters[this.index].href;
     // console.log("请求网址: ", url);
     timer1.start();
-    const source = await superagent.get(url).responseType("arraybuffer");
-    console.log("请求内容耗时: " + timer1.stop() + "s");
-    source.charset && (this.charset = source.charset);
-    const UTF8Data = iconv.decode(source.body, this.charset);
-    const $ = cheerio.load(UTF8Data);
-    this.index++;
+    this.overtime();
+    try {
+      const source = await superagent.get(url).responseType("arraybuffer");
+      console.log("请求内容耗时: " + timer1.stop() + "s");
+      source.charset && (this.charset = source.charset);
+      const UTF8Data = iconv.decode(source.body, this.charset);
+      const $ = cheerio.load(UTF8Data);
+      this.index++;
 
-    let data = this.extractData($);
-    this.saveData(data);
-    this.lock = false;
+      let data = this.extractData($);
+      this.saveData(data);
+      this.lock = false;
+    } catch (e) {
+      console.log("请求异常: ", e);
+    }
+  }
+
+  // 超时处理
+  overtime() {
+    this.timer && clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      console.error(this.chapters[this.index].title, "请求超时,重新发起请求");
+      this.lock = false;
+    }, 15 * 1000);
   }
 
   // 提取数据
@@ -196,7 +222,7 @@ class BookSea {
         __dirname,
         `../public/books/${this.book.title}/${fileName}.txt`
       ),
-      content,
+      make(content),
       (err) => {
         let status = err ? "保存失败" : "保存成功";
         console.log(title + " " + status);
@@ -207,15 +233,15 @@ class BookSea {
 
 function createDir(url) {
   return new Promise((resolve, reject) => {
-    fs.readdir(url, (err) => {
-      if (!err) return resolve(0); // 文件夹已存在
+    if (fs.existsSync(url)) return resolve(0); // 文件夹已存在
+    else {
       fs.mkdir(url, (err2) => {
         if (err2) {
           console.error("文件夹创建失败: ", err2);
           return reject(1);
         } else return resolve(0);
       });
-    });
+    }
   });
 }
 
@@ -268,6 +294,16 @@ function saveChapters(book) {
           }
         });
       }
+    });
+  });
+}
+
+function saveInfo(data) {
+  return new Promise((resolve, reject) => {
+    let url = path.join(__dirname, `../public/books/${data.title}/info.json`);
+    fs.writeFile(url, data, (err) => {
+      if (err) reject(err);
+      else resolve();
     });
   });
 }

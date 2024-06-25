@@ -26,11 +26,17 @@ exports.send = (to, content) => {
         subject: "Welcome to Fancer Server!", // Subject line
         // text: '"MG'Blog ?"', // 文本内容
         html: `
-        <img src="http://www.zhouyi.run:3001/api/v1/files/preview?p=pexels-photo-276452.jpeg&&mimetype=image/jpeg" alt=""  style="height:auto;display:block;" />
-        <p >??? <a href="http://www.zhouyi.run/#/">ZY.API</a></p>
-        <p style="font-weight: bold">${content}</p>
-        <p ><a style="font-size: 18px;font-weight: bolder" href="http://www.zhouyi.run/#/">确认</a></p>
-        <p style="text-indent: 2em;">祝您工作顺利，心想事成</p>`,
+          <div
+            style="
+              background-image: url('https://s.ccg999.cn/business/138/bargain/2024/06/19/b7493202406191014359152.jpg');
+              background-size: 100% auto;
+              color: #6495ed;
+              padding: 10px 16px;
+            "
+          >
+            <h2>Darling:</h2>
+            <p>${content}</p>
+          </div>`,
       },
       (error, info) => {
         if (error) {
