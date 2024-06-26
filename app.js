@@ -31,13 +31,13 @@ const newpc = require("./task/newpc.js");
 const conversion = require("./utils/conversion.js");
 //测试代码
 app.get("/", async (req, res) => {
-  const bookSea = new newpc.initBookSea({
-    // url: "http://www.ibiquge.cc/762/",
-    url: "http://www.ldxsw.net/book_4431/",
-    site: "lingdian",
-    interval: 1,
-  });
-  bookSea.start();
+  // const bookSea = new newpc.initBookSea({
+  //   // url: "http://www.ibiquge.cc/762/",
+  //   url: "http://www.ldxsw.net/book_4431/",
+  //   site: "lingdian",
+  //   interval: 1,
+  // });
+  // bookSea.start();
   // conversion();
 
   console.log("当前环境: ", process.env);
@@ -50,7 +50,7 @@ app.get("/", async (req, res) => {
 const { makeBook, createBookJson } = require("./utils/book.js");
 app.get("/demo", async (req, res) => {
   // makeBook();
-  // createBookJson("魔王奶爸");
+  createBookJson("魔王奶爸");
   res.send("start!" + new Date().getTime());
 });
 
@@ -83,7 +83,14 @@ app.get("/mwnb", async (req, res) => {
             index + 1 <= jsonData.directory.length
               ? index + 1
               : jsonData.directory.length;
-          res.render("index", { title: item.title, content: data2, pre, next });
+          res.render("index", {
+            title: item.title,
+            content: data2,
+            index,
+            pre,
+            next,
+            chapters: jsonData.directory,
+          });
         }
       });
     }
@@ -93,9 +100,9 @@ app.get("/mwnb", async (req, res) => {
 const BQG = require("./task/bqg.js");
 let pachong = "";
 app.get("/start", async (req, res) => {
-  let { story_id, start_page_no, interval, id } = req.query;
-  pachong = BQG(story_id, start_page_no, id, interval);
-  pachong.start();
+  // let { story_id, start_page_no, interval, id } = req.query;
+  // pachong = BQG(story_id, start_page_no, id, interval);
+  // pachong.start();
   res.send("start!");
 });
 app.get("/stop", async (req, res) => {
