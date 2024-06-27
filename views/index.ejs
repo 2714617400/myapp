@@ -81,6 +81,7 @@
       </button>
     </div>
 
+    <!-- 弹出层 查看目录和设置字体 -->
     <div
       id="menu_poup"
       class="menu-popup position-fixed d-flex flex-column justify-content-center align-items-center invisible"
@@ -122,7 +123,6 @@
       crossorigin="anonymous"
     ></script>
     <script>
-      console.log($, "$");
       $(document).ready(function () {
         $("#menu_btn").on("click", function () {
           $("#menu_poup").toggleClass("invisible");
