@@ -25,7 +25,7 @@
         word-wrap: break-word;
         box-sizing: border-box;
         font-size: 1.2rem;
-        line-height: 2rem;
+        line-height: 1.5em;
         letter-spacing: 2px;
         color: #555;
 
@@ -48,12 +48,21 @@
         overflow-y: auto;
         font-size: 0.8rem;
       }
+      #font_size_num {
+        display: inline-block;
+        width: 2rem;
+        margin: 0 1rem;
+        text-align: center;
+        color: rgb(255, 0, 76);
+      }
     </style>
   </head>
   <body>
     <!-- 标题 -->
     <nav class="navbar navbar-light bg-light sticky-top">
-      <span class="navbar-brand mb-0 h1">No.<%= index %> <%= title %></span>
+      <span class="navbar-brand mb-0 h1 text-truncate"
+        >No.<%= index %> <%= title %></span
+      >
     </nav>
 
     <!-- 正文 -->
@@ -61,25 +70,43 @@
 
     <!-- 操作栏 -->
     <div class="d-flex justify-content-around align-items-center">
-      <button type="button" class="btn btn-link" id="menu_btn">目录</button>
-      <button type="button" class="btn btn-link">
+      <button type="button" class="btn btn-link btn-lg" id="menu_btn">
+        目录
+      </button>
+      <button type="button" class="btn btn-link btn-lg">
         <a href="/mwnb?index=<%= pre %>">上一章</a>
       </button>
-      <button type="button" class="btn btn-link">
+      <button type="button" class="btn btn-link btn-lg">
         <a href="/mwnb?index=<%= next %>">下一章</a>
       </button>
     </div>
 
     <div
       id="menu_poup"
-      class="menu-popup position-fixed d-flex justify-content-center align-items-center invisible"
+      class="menu-popup position-fixed d-flex flex-column justify-content-center align-items-center invisible"
     >
-      <div class="menu-box list-group text-truncate">
+      <div class="menu-box list-group">
         <% chapters.forEach(function(item, i) { %>
         <a href="/mwnb?index=<%= i + 1 %>" class="list-group-item">
           No: <%= i + 1 %> <%= item.title %>
         </a>
         <% }); %>
+      </div>
+      <div
+        class="shadow-sm p-3 mt-4 bg-white rounded d-flex justify-content-center align-items-center"
+      >
+        字体大小:
+        <span id="font_size_num">1</span>
+        <button
+          id="reduce"
+          type="button"
+          class="btn btn-outline-dark pl-4 pr-4 mr-2"
+        >
+          -
+        </button>
+        <button id="add" type="button" class="btn btn-outline-dark pl-4 pr-4">
+          +
+        </button>
       </div>
     </div>
 
@@ -103,6 +130,32 @@
         $("#menu_poup").on("click", function () {
           $("#menu_poup").toggleClass("invisible");
         });
+
+        // 字体设置
+        let fontSize = Number(localStorage.getItem("font_size"));
+        if (!fontSize) {
+          fontSize = 1.2;
+        }
+        $(".content").css("font-size", fontSize + "rem");
+        $("#font_size_num").text(fontSize);
+
+        $("#reduce").on("click", function (event) {
+          fontSize = Number(fontSize) - 0.1;
+          setFontSize();
+          event.stopPropagation();
+        });
+        $("#add").on("click", function (event) {
+          fontSize = Number(fontSize) + 0.1;
+          setFontSize();
+          event.stopPropagation();
+        });
+
+        const setFontSize = function () {
+          fontSize = fontSize.toFixed(1);
+          localStorage.setItem("font_size", fontSize);
+          $(".content").css("font-size", fontSize + "rem");
+          $("#font_size_num").text(fontSize);
+        };
       });
     </script>
   </body>

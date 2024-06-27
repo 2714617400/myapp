@@ -56,8 +56,9 @@ app.get("/demo", async (req, res) => {
 
 app.get("/mwnb", async (req, res) => {
   const query = req.query;
+  if (query.index === "" || isNaN(Number(query.index)))
+    return res.status(400).json("索引不存在");
   let index = Number(query.index);
-  if (isNaN(index)) return res.status(400).json("索引不存在");
   const dirPath = path.join(__dirname, `./public/books/魔王奶爸`);
   const jsonPath = path.join(__dirname, `./public/books/魔王奶爸/info.json`);
 
