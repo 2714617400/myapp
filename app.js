@@ -33,7 +33,7 @@ const conversion = require("./utils/conversion.js");
 app.get("/", async (req, res) => {
   // const bookSea = new newpc.initBookSea({
   //   // url: "http://www.ibiquge.cc/762/",
-  //   url: "http://www.ldxsw.net/book_4431/",
+  //   url: "http://www.ldxsw.net/book_13491/",
   //   site: "lingdian",
   //   interval: 1,
   // });
@@ -49,18 +49,20 @@ app.get("/", async (req, res) => {
 
 const { makeBook, createBookJson } = require("./utils/book.js");
 app.get("/demo", async (req, res) => {
-  // makeBook();
-  createBookJson("魔王奶爸");
+  // makeBook("魔法学徒", "零点小说网 www.ldxsw.net，最快更新魔法学徒最新章节！");
+  // createBookJson("魔法学徒");
   res.send("start!" + new Date().getTime());
 });
 
 app.get("/mwnb", async (req, res) => {
   const query = req.query;
+  if (!query.title) return res.status(400).json("小说名称不能为空");
   if (query.index === "" || isNaN(Number(query.index)))
     return res.status(400).json("索引不存在");
   let index = Number(query.index);
-  const dirPath = path.join(__dirname, `./public/books/魔王奶爸`);
-  const jsonPath = path.join(__dirname, `./public/books/魔王奶爸/info.json`);
+  let title = query.title;
+  const dirPath = path.join(__dirname, `./public/books/${title}`);
+  const jsonPath = path.join(__dirname, `./public/books/${title}/info.json`);
 
   fs.readFile(jsonPath, (err, data) => {
     if (err) return res.status(400).json(err);
@@ -74,7 +76,7 @@ app.get("/mwnb", async (req, res) => {
       let item = jsonData.directory[index - 1];
       const chartPath = path.join(
         __dirname,
-        `./public/books/魔王奶爸/${item.fileName}`
+        `./public/books/${title}/${item.fileName}`
       );
       fs.readFile(chartPath, (err2, data2) => {
         if (err2) res.status(400).json("文件读取失败");

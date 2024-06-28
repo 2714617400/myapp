@@ -8,7 +8,7 @@ const Story = require("../models/story.js");
 const TaskScheduler = require("../plugins/schedule/index.js");
 
 const { initTimer } = require("../utils/index.js");
-const { make } = require("../utils/book.js");
+const { make, createBookJson } = require("../utils/book.js");
 
 const WebSiteOpt = {
   biquge: {
@@ -34,7 +34,6 @@ const WebSiteOpt = {
 };
 
 let timer1 = initTimer();
-let timer2 = initTimer();
 class BookSea {
   constructor(opt) {
     this.url = opt.url;
@@ -159,13 +158,7 @@ class BookSea {
       console.log(this.book.title + "所有章节已全部获取");
       saveChapters(this.book);
       this.timer && clearTimeout(this.timer);
-      // saveInfo({
-      //   title: this.book.title,
-      //   directory: [],
-      //   index: this.index,
-      //   url: '',
-      //   site: '',
-      // });
+      createBookJson(this.book.title);
       this.stop();
       return;
     }

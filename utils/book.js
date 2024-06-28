@@ -26,8 +26,7 @@ function make(str) {
   return filterData.join("\n\n");
 }
 
-function makeBook() {
-  const name = "魔王奶爸";
+function makeBook(name, str) {
   const url = path.join(__dirname, `../public/books/${name}`);
   // console.log("目录路径: ", url);
   fs.readdir(url, { encoding: "utf8" }, async (err, files) => {
@@ -38,10 +37,7 @@ function makeBook() {
           await new Promise((resolve, reject) => {
             fs.readFile(chart, { encoding: "utf-8" }, (err2, data) => {
               if (!err2 && data) {
-                let filterData = filter(
-                  data.split(/\u00A0/),
-                  "零点小说网 www.ldxsw.net，最快更新魔王奶爸最新章节！"
-                );
+                let filterData = filter(data.split(/\u00A0/), str);
                 let writeData = filterData.join("\n\n");
                 fs.writeFile(chart, writeData, (err3) => {
                   if (!err3) {
