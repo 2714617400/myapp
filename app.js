@@ -54,7 +54,7 @@ app.get("/demo", async (req, res) => {
   res.send("start!" + new Date().getTime());
 });
 
-app.get("/mwnb", async (req, res) => {
+app.get("/read", async (req, res) => {
   const query = req.query;
   if (!query.title) return res.status(400).json("小说名称不能为空");
   if (query.index === "" || isNaN(Number(query.index)))
@@ -87,6 +87,7 @@ app.get("/mwnb", async (req, res) => {
               ? index + 1
               : jsonData.directory.length;
           res.render("index", {
+            name: title,
             title: item.title,
             content: data2,
             index,
