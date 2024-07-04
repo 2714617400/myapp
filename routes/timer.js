@@ -11,22 +11,9 @@ const timerList = [
 
 const express = require("express");
 const router = express.Router();
-const SUCCESS = function (data) {
-  return {
-    status: 0,
-    msg: data ? "" : "操作成功",
-    result: data,
-  };
-};
-const FAIL = function (data) {
-  return {
-    status: 1,
-    msg: data ?? "操作失败",
-  };
-};
 
 router.get("/", function (req, res) {
-  res.json(SUCCESS(timerList));
+  res.json(global.SUCCESS(timerList));
 });
 
 module.exports = router;

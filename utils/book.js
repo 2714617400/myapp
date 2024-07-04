@@ -106,9 +106,19 @@ function createBookJson(name) {
   });
 }
 
+function customEncode(str, charset) {
+  // 将gbk编码的文字转换为16进制的字节,字节前加%,并且16进制字母转为大写
+  const buf = iconv.encode(str, charset); // 转换为字节数组
+  return Array.from(
+    buf,
+    (byte) => "%" + byte.toString(16).padStart(2, "0").toUpperCase()
+  ).join(""); // 转换为十六进制字符串
+}
+
 module.exports = {
   make,
   makeBook,
   createBookJson,
+  customEncode,
 };
 // 'fly me to the moon.'

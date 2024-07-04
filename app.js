@@ -5,6 +5,7 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const ejs = require("ejs");
 require("./plugins/dotenv"); // 导入环境变量
+require("./plugins/global");
 const config = require("./global.config")["development"];
 global.CONF = config;
 const utils = require("./utils/index");
@@ -157,12 +158,14 @@ var genshinRouter = require("./routes/genshin");
 var uploadRouter = require("./routes/upload");
 var storyRouter = require("./routes/story");
 var timerRouter = require("./routes/timer");
+var botRouter = require("./routes/bot");
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/genshin", genshinRouter);
 app.use("/upload", uploadRouter);
 app.use("/story", storyRouter);
 app.use("/timer", timerRouter);
+app.use("/bot", botRouter);
 
 // 404
 app.use(function (req, res, next) {
