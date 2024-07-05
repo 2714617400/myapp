@@ -14,7 +14,8 @@ const router = express.Router();
 router.get("/search", async function (req, res) {
   const { s } = req.query;
   if (!s.trim()) {
-    res.json(global.FAIL("请输入书名"));
+    // res.json(global.FAIL("请输入书名"));
+    res.render("searchResult", { msg: "请输入书名" });
     return;
   }
 
@@ -42,7 +43,8 @@ router.get("/search", async function (req, res) {
           }
         });
       console.error("错误提示: ", hasErrorText, errorText);
-      res.json(global.FAIL(errorText));
+      // res.json(global.FAIL(errorText));
+      res.render("searchResult", { msg: errorText });
     } else {
       let $tr = $("#main table tbody").find("tr");
       let rowData = [];
@@ -62,11 +64,14 @@ router.get("/search", async function (req, res) {
           rowData.push(cellData);
         }
       });
-      res.json(global.SUCCESS(rowData));
+      console.log("爬取结果: ", rowData);
+      res.render("searchResult", { list: rowData, msg: "" });
+      // res.json(global.SUCCESS(rowData));
     }
   } catch (e) {
     console.error("失败: ", e);
-    res.json(global.FAIL(e));
+    // res.json(global.FAIL(e));
+    res.render("searchResult", { msg: JSON.stringify(e) });
   }
 });
 
