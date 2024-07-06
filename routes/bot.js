@@ -13,7 +13,7 @@ const router = express.Router();
 // 搜索小说
 router.get("/search", async function (req, res) {
   const { s } = req.query;
-  if (!s.trim()) {
+  if (!s || !s.trim()) {
     // res.json(global.FAIL("请输入书名"));
     res.render("searchResult", { msg: "请输入书名" });
     return;
