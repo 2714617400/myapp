@@ -34,7 +34,7 @@
   </head>
   <body>
     <div class="py-3 px-4">
-      <form class="mb-3 sticky-top" action="/bot/search" method="get">
+      <form class="mb-3 sticky-top shadow-sm" action="/bot/search" method="get">
         <div class="input-group">
           <input
             type="text"
@@ -53,9 +53,16 @@
       </form>
 
       <% if (!msg) { %>
-      <ul class="list-group">
+      <div class="text-secondary">
+        <small>耗时:<%= consume %>s</small>
+        <small class="ml-4">数量:<%= list.length %></small>
+      </div>
+      <ul class="list-group" id="group">
         <% list.forEach(function(item, i) { %>
-        <li class="list-group-item d-flex justify-content-between">
+        <li
+          class="list-group-item d-flex justify-content-between"
+          data-id="<%= item[1] %>"
+        >
           <div class="w-50 text-nowrap text-truncate"><%= item[1] %></div>
           <div class="w-50 text-nowrap text-truncate text-right text-muted">
             <%= item[3] %>
@@ -79,6 +86,13 @@
       integrity="sha384-7ymO4nGrkm372HoSbq1OY2DP4pEZnMiA+E0F3zPr+JQQtQ82gQ1HPY3QIVtztVua"
       crossorigin="anonymous"
     ></script>
-    <script></script>
+    <script>
+      $(document).ready(function () {
+        $("#group").on("click", function (event) {
+          const child = event.target;
+          console.log(event, child.dataset);
+        });
+      });
+    </script>
   </body>
 </html>

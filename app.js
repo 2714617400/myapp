@@ -147,9 +147,14 @@ app.post("/upload", upload.single("file"), (req, res) => {
 app.use(express.json()); // application/json
 app.use(express.urlencoded({ extended: true })); // x-www-form-urlencoded
 
-app.use(logger("dev"));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(logger("dev"));
+// 记录接口请求到日志
+const accessLogStream = fs.createWriteStream("./log/request.log", {
+  flags: "a",
+});
+app.use(logger("combined", { stream: accessLogStream }));
 
 // 路由
 var indexRouter = require("./routes/index");

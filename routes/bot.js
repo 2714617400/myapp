@@ -1,14 +1,14 @@
 var express = require("express");
 const fs = require("fs");
-const mongoose = require("mongoose");
 const superagent = require("superagent");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
 
 const Story = require("../models/story.js");
-const upload = require("../plugins/multer");
+const { initTimer } = require("../utils/index.js");
 const { customEncode } = require("../utils/book.js");
 const router = express.Router();
+const timer = initTimer();
 
 // 搜索小说
 router.get("/search", async function (req, res) {
@@ -24,6 +24,7 @@ router.get("/search", async function (req, res) {
   let charset = "gbk";
 
   try {
+    timer.start();
     const source = await superagent.get(searchUrl).responseType("arraybuffer");
     source.charset && (charset = source.charset);
     const UTF8Data = iconv.decode(source.body, charset);
@@ -65,7 +66,11 @@ router.get("/search", async function (req, res) {
         }
       });
       console.log("爬取结果: ", rowData);
-      res.render("searchResult", { list: rowData, msg: "" });
+      res.render("searchResult", {
+        list: rowData,
+        msg: "",
+        consume: timer.stop(),
+      });
       // res.json(global.SUCCESS(rowData));
     }
   } catch (e) {

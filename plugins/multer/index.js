@@ -1,25 +1,25 @@
 const multer = require("multer");
 const path = require("path");
-
-function getNowFormatDate() {
-  var date = new Date();
-  var seperator1 = "-";
-  var month = date.getMonth() + 1;
-  var strDate = date.getDate();
-  if (month >= 1 && month <= 9) {
-    month = "0" + month;
-  }
-  if (strDate >= 0 && strDate <= 9) {
-    strDate = "0" + strDate;
-  }
-  var currentdate =
-    date.getFullYear() + seperator1 + month + seperator1 + strDate;
-  return currentdate.toString();
-}
-var datatime = "public/images/" + getNowFormatDate();
+const fs = require("fs");
 
 const storage = multer.diskStorage({
-  destination: datatime,
+  destination: function (req, file, cb) {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const folder = `${year}${month}${day}`;
+
+    // 创建文件夹路径
+    const uploadPath = path.join(__dirname, "../../public/images", folder);
+
+    // 确保文件夹存在，如果不存在则创建它
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    cb(null, uploadPath); // 设置存储路径
+  },
   filename: (req, file, cb) => {
     let extname = path.extname(file.originalname); // 获取扩展名
     cb(null, Date.now() + extname); // 设置文件名
