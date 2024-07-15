@@ -34,7 +34,8 @@ const StorySchema = new mongoose.Schema(
     description: String, // 简介
     genres: Array, // 类型
     tag: Array, // 标签
-    chapters: Array, // 故事章节
+    update_index: Boolean, // 是否更新过索引
+    update_index_last_date: Date, // 更新日期
   },
   {
     timestamps: true, // 自动添加createdAt和updatedAt字段
