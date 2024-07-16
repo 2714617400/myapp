@@ -32,13 +32,14 @@ const newpc = require("./task/newpc.js");
 const conversion = require("./utils/conversion.js");
 //测试代码
 app.get("/", async (req, res) => {
-  // const bookSea = new newpc.initBookSea({
-  //   // url: "http://www.ibiquge.cc/762/",
-  //   url: "http://www.ldxsw.net/book_13491/",
-  //   site: "lingdian",
-  //   interval: 1,
-  // });
-  // bookSea.start();
+  const bookSea = new newpc.initBookSea({
+    // url: "http://www.ibiquge.cc/762/",
+    // url: "http://www.ldxsw.net/book_13491/",
+    url: "http://www.wlwx.la/book/149019/",
+    site: "wensang",
+    interval: 1,
+  });
+  bookSea.start();
   // conversion();
 
   console.log("当前环境: ", process.env);

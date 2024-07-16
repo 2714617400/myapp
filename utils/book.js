@@ -5,7 +5,7 @@ const iconv = require("iconv-lite");
 const currency = [];
 function filter(text, str, isAll = false) {
   let arr = text.filter((v) => !!v.trim());
-  let reg = new RegExp(str, "g");
+  let reg = new RegExp(str);
   if (isAll) {
     arr.map((v) => v.trim().replace(reg, ""));
   } else {
@@ -18,11 +18,9 @@ function filter(text, str, isAll = false) {
   return arr;
 }
 
-function make(str) {
-  let filterData = filter(
-    str.split(/\u00A0/),
-    "零点小说网 www.ldxsw.net，最快更新魔王奶爸最新章节！"
-  );
+// 去除正文中的网站宣传链接,格式化换行
+function make(data, exclude = "https://www.rezero.cc") {
+  let filterData = filter(data.split(/(\u00A0|\n)+/), exclude);
   return filterData.join("\n\n");
 }
 
@@ -58,6 +56,7 @@ function makeBook(name, str) {
   });
 }
 
+// 创建书本索引文件
 function createBookJson(name) {
   const bookPath = path.join(__dirname, `../public/books/${name}`);
   const jsonPath = path.join(__dirname, `../public/books/${name}/info.json`);

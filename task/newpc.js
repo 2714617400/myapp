@@ -18,7 +18,7 @@ const WebSiteOpt = {
     el_cover: "",
     el_desc: "",
     el_directory: ".listmain dl dd a",
-    el_title: '"#book .content h1',
+    el_title: "#book .content h1",
     el_content: "#book #content",
   },
   lingdian: {
@@ -31,6 +31,22 @@ const WebSiteOpt = {
     el_title: "#main>h1",
     el_content: "#content",
   },
+  wensang: {
+    url: "http://www.wlwx.la",
+    el_book_name:
+      "body > div.wrapper > div.box-center.intro-wp.clear > div.intro-main.fl > div.info-box.clear > div > h1 > a",
+    el_author:
+      "body > div.wrapper > div.box-center.intro-wp.clear > div.intro-main.fl > div.info-box.clear > div > div.field.clear > span:nth-child(1) > a",
+    el_cover: "#bookCover > img",
+    el_desc:
+      "body > div.wrapper > div.box-center.intro-wp.clear > div.intro-main.fl > div.info-box.clear > div > div.desc.desc-short",
+    el_directory: "#allChapter > ul li a",
+    el_title: "body > div.reader-main > div.paper-box.paper-article > h1",
+    el_content: "#BookText",
+  }, // 文桑
+  zhixuan: {
+    url: "https://www.jmhqw.com",
+  }, // 知轩
 };
 
 let timer1 = initTimer();
@@ -43,7 +59,7 @@ class BookSea {
     this.timer = null;
 
     this.chapters = [];
-    this.index = 931;
+    this.index = 0;
     this.storyId = "";
     this.lock = false;
     this.book = {
@@ -299,6 +315,15 @@ function saveInfo(data) {
       else resolve();
     });
   });
+}
+
+function fillLink(url, domain) {
+  if (/http:|https:/.test(url)) return url;
+  else {
+    let urls = url.split("/");
+    let domains = domain.split("//[^/]/");
+    //...
+  }
 }
 
 function initBookSea(opt) {
