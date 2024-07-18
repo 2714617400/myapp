@@ -6,7 +6,7 @@ const iconv = require("iconv-lite");
 
 const Story = require("../models/story.js");
 const { initTimer } = require("../utils/index.js");
-const { customEncode } = require("../utils/book.js");
+const { customEncode, collect, makeUrl } = require("../utils/book.js");
 const router = express.Router();
 const timer = initTimer();
 
@@ -80,4 +80,19 @@ router.get("/search", async function (req, res) {
   }
 });
 
+router.get("/test", async function (req, res) {
+  let charset = "gbk";
+  const source = await superagent
+    .get("http://www.ibiquge.cc/22999/15645456.html")
+    .responseType("arraybuffer");
+  source.charset && (charset = source.charset);
+  const UTF8Data = iconv.decode(source.body, charset);
+  const $ = cheerio.load(UTF8Data);
+  console.log("提取: ", collect($("#content")));
+  console.log(
+    "拼接url: ",
+    makeUrl("https://www.baidu.com/abc/ddd", "public/books/")
+  );
+  res.json(new Date().getTime());
+});
 module.exports = router;

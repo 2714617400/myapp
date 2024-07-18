@@ -114,10 +114,77 @@ function customEncode(str, charset) {
   ).join(""); // 转换为十六进制字符串
 }
 
+// 一个提取文本,图片链接,跳转链接的函数,不适用复杂结构的元素
+function collect($el) {
+  console.log(
+    "路径: ",
+    path.join("https://www.baidu.com/abc/ddd/", `../public/books`)
+  );
+  if (!$el) return {};
+  try {
+    const el = $el.first();
+    let data = {};
+    // get(0): 获取这个元素的原始DOM对象
+    if (el.get(0).tagName === "img") {
+      data = {
+        url: el.attr("src"),
+      };
+    } else if (el.get(0).tagName === "a") {
+      data = {
+        href: el.attr("href"),
+        text: el
+          .contents()
+          .filter(function () {
+            return this.nodeType === 3;
+          })
+          .text(),
+      };
+    } else {
+      data = {
+        text: el
+          .contents()
+          .filter(function () {
+            return this.nodeType === 3;
+          })
+          .text(),
+      };
+    }
+    return data;
+  } catch (e) {
+    console.error("提取报错: ", e);
+    throw new Error(e);
+  }
+}
+
+function splitUrl(url) {
+  // 正则表达式匹配协议头和路径
+  const regex = /^(https?:\/\/[^\/]+)(\/[^?#]*)?.*$/i;
+  const match = url.match(regex);
+
+  if (match) {
+    // 获取协议头和可能的路径部分
+    const protocolAndHost = match[1];
+    const path = match[2] || ""; // 如果没有路径，则默认为空字符串
+
+    // 将协议头和路径部分按斜杠分割成数组
+    return [protocolAndHost].concat(path.split("/").filter(Boolean));
+  } else {
+    return [];
+  }
+}
+// 组合url和路径
+function makeUrl(url, p) {
+  let splitParts = splitUrl(url).filter((v) => v.length);
+  const splitPath = p.split("/").filter((v) => v.length);
+  return splitParts.concat(splitPath).join("/");
+}
+
 module.exports = {
   make,
   makeBook,
   createBookJson,
   customEncode,
+  collect,
+  makeUrl,
 };
 // 'fly me to the moon.'
