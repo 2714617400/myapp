@@ -83,12 +83,12 @@ router.get("/search", async function (req, res) {
 router.get("/test", async function (req, res) {
   let charset = "gbk";
   const source = await superagent
-    .get("http://www.ibiquge.cc/22999/15645456.html")
+    .get("http://www.wlwx.la/book/53832/")
     .responseType("arraybuffer");
   source.charset && (charset = source.charset);
   const UTF8Data = iconv.decode(source.body, charset);
   const $ = cheerio.load(UTF8Data);
-  console.log("提取: ", collect($("#content")));
+  console.log("提取: ", collect($("#bookCover > img")));
   console.log(
     "拼接url: ",
     makeUrl("https://www.baidu.com/abc/ddd", "public/books/")

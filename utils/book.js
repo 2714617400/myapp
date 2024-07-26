@@ -116,10 +116,6 @@ function customEncode(str, charset) {
 
 // 一个提取文本,图片链接,跳转链接的函数,不适用复杂结构的元素
 function collect($el) {
-  console.log(
-    "路径: ",
-    path.join("https://www.baidu.com/abc/ddd/", `../public/books`)
-  );
   if (!$el) return {};
   try {
     const el = $el.first();

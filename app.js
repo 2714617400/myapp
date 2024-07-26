@@ -35,7 +35,7 @@ app.get("/", async (req, res) => {
   const bookSea = new newpc.initBookSea({
     // url: "http://www.ibiquge.cc/762/",
     // url: "http://www.ldxsw.net/book_13491/",
-    url: "http://www.wlwx.la/book/149019/",
+    url: "http://www.wlwx.la/book/182551/",
     site: "wensang",
     interval: 1,
   });

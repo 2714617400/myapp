@@ -18,7 +18,8 @@
     <style>
       .content {
         width: 100%;
-        background-color: #e9faff;
+        /* background-color: #e9faff; */
+        background-color: #000000;
         white-space: pre-line;
         padding: 1rem 0.7rem;
         text-align: justify;
@@ -59,7 +60,7 @@
   </head>
   <body>
     <!-- 标题 -->
-    <nav class="navbar navbar-light bg-light sticky-top">
+    <nav class="navbar navbar-light bg-dark sticky-top">
       <span class="navbar-brand mb-0 h1 text-truncate"
         >No.<%= index %> <%= title %></span
       >
@@ -69,7 +70,7 @@
     <div class="content"><%= content %></div>
 
     <!-- 操作栏 -->
-    <div class="d-flex justify-content-around align-items-center">
+    <div class="d-flex justify-content-around align-items-center bg-dark">
       <button type="button" class="btn btn-link btn-lg" id="menu_btn">
         目录
       </button>
