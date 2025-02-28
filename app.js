@@ -133,7 +133,7 @@ app.get("/stop", async (req, res) => {
 // console.log("爬虫启动!");
 
 // 连接数据库
-require("./plugins/mongoose");
+// require("./plugins/mongoose");
 
 // 文件上传
 const upload = require("./plugins/multer");
